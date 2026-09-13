@@ -8,10 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Rolling MP4 replay buffer using short finalized segments. A saved replay is a group of sequential
- * MP4 clips so even a crash normally loses at most the current segment.
- */
+/** Rolling MP4 replay buffer using finalized short segments. */
 class ReplayBufferManager(
     private val context: Context,
     private val startRecord: (File) -> Boolean,
@@ -36,21 +33,32 @@ class ReplayBufferManager(
     fun stop(deleteBuffer: Boolean = true) {
         enabled = false
         handler.removeCallbacks(rotateRunnable)
-        if (segmentActive) { runCatching { stopRecord() }; segmentActive = false; current?.let(::finalizeSegment) }
+        if (segmentActive) {
+            runCatching { stopRecord() }
+            segmentActive = false
+            current?.let(::finalizeSegment)
+        }
         current = null
-        if (deleteBuffer) { finalized.forEach { runCatching { it.delete() } }; finalized.clear() }
+        if (deleteBuffer) {
+            finalized.forEach { runCatching { it.delete() } }
+            finalized.clear()
+        }
     }
 
-    /** Temporarily yield the muxer to normal recording. */
     fun pauseForNormalRecord(): Boolean {
         val wasEnabled = enabled
         if (wasEnabled) stop(deleteBuffer = false)
         return wasEnabled
     }
 
-    fun resumeAfterNormalRecord() { if (!enabled) { enabled = true; if (beginSegment()) scheduleRotate() else enabled = false } }
+    fun resumeAfterNormalRecord() {
+        if (!enabled) {
+            enabled = true
+            if (beginSegment()) scheduleRotate() else enabled = false
+        }
+    }
 
-    /** Finalize the current segment and return the clips covering the requested replay window. */
+    /** Finalize current data and return one playable MP4 covering the replay window. */
     fun snapshot(): List<File> {
         if (enabled && segmentActive) {
             handler.removeCallbacks(rotateRunnable)
@@ -60,8 +68,15 @@ class ReplayBufferManager(
             current = null
             if (beginSegment()) scheduleRotate()
         }
+
         val count = ((windowSeconds + segmentSeconds - 1) / segmentSeconds).coerceAtLeast(1)
-        return finalized.takeLast(count).filter { it.exists() && it.length() > 0 }
+        val clips = finalized.takeLast(count).filter { it.exists() && it.length() > 0L }
+        if (clips.size <= 1) return clips
+
+        val dir = File(context.cacheDir, "replay_exports").apply { mkdirs() }
+        val stamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+        val merged = File(dir, "Replay_${windowSeconds}s_$stamp.mp4")
+        return if (ReplayClipMerger.merge(clips, merged)) listOf(merged) else clips
     }
 
     fun status(): String = if (enabled) "ON ${windowSeconds}s (${finalized.size} clips)" else "OFF"
@@ -72,24 +87,33 @@ class ReplayBufferManager(
         val stamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
         val file = File(dir, "replay_$stamp.mp4")
         val ok = runCatching { startRecord(file) }.getOrDefault(false)
-        if (ok) { current = file; segmentActive = true }
+        if (ok) {
+            current = file
+            segmentActive = true
+        }
         return ok
     }
 
-    private fun scheduleRotate() { handler.postDelayed(rotateRunnable, segmentSeconds * 1000L) }
+    private fun scheduleRotate() {
+        handler.postDelayed(rotateRunnable, segmentSeconds * 1000L)
+    }
 
     private val rotateRunnable = object : Runnable {
         override fun run() {
             if (!enabled) return
             if (segmentActive) {
-                runCatching { stopRecord() }; segmentActive = false; current?.let(::finalizeSegment); current = null
+                runCatching { stopRecord() }
+                segmentActive = false
+                current?.let(::finalizeSegment)
+                current = null
             }
             if (beginSegment()) scheduleRotate() else enabled = false
         }
     }
 
     private fun finalizeSegment(file: File) {
-        if (file.exists() && file.length() > 0) finalized.addLast(file) else runCatching { file.delete() }
+        if (file.exists() && file.length() > 0L) finalized.addLast(file)
+        else runCatching { file.delete() }
         val max = ((windowSeconds + segmentSeconds - 1) / segmentSeconds + 2).coerceAtLeast(3)
         while (finalized.size > max) runCatching { finalized.removeFirst().delete() }
     }
