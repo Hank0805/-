@@ -1,2 +1,2 @@
-Trigger GitHub Actions build for Mini OBS v0.5
-OBS GUI enhanced compile pass 3
+Trigger GitHub Actions build for Mini OBS v0.5.1
+Japanese UI build
