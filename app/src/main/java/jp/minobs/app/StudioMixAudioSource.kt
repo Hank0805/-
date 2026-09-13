@@ -19,15 +19,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 
-/**
- * Real three-bus Android mixer used by Mini OBS.
- * - Phone microphone
- * - Android playback capture (game/media)
- * - Optional USB audio input exposed by an HDMI capture device
- *
- * Each bus has its own gain and delay line. Monitoring is optional and is intentionally
- * disabled by default to avoid speaker feedback.
- */
 class StudioMixAudioSource(
   private val context: Context,
   mediaProjection: MediaProjection,
@@ -88,11 +79,18 @@ class StudioMixAudioSource(
     if (!running.compareAndSet(false, true)) return
     micQueue.clear(); internalQueue.clear(); usbQueue.clear()
 
-    mic.start(GetMicrophoneData { frame -> offerLatest(micQueue, frame) })
-    internal.start(GetMicrophoneData { frame -> offerLatest(internalQueue, frame) })
+    mic.start(object : GetMicrophoneData {
+      override fun inputPCMData(frame: Frame) = offerLatest(micQueue, frame)
+    })
+    internal.start(object : GetMicrophoneData {
+      override fun inputPCMData(frame: Frame) = offerLatest(internalQueue, frame)
+    })
     usb?.let { source ->
-      runCatching { source.start(GetMicrophoneData { frame -> offerLatest(usbQueue, frame) }) }
-        .onFailure { usb = null }
+      runCatching {
+        source.start(object : GetMicrophoneData {
+          override fun inputPCMData(frame: Frame) = offerLatest(usbQueue, frame)
+        })
+      }.onFailure { usb = null }
     }
 
     mixerThread = Thread({ mixLoop() }, "MiniOBS-AudioMixer").apply { start() }
@@ -173,7 +171,7 @@ class StudioMixAudioSource(
       MonitorMode.MICROPHONE -> mic
       MonitorMode.INTERNAL -> internal
       MonitorMode.USB -> usb
-      MonitorMode.OFF -> return
+      StudioMixAudioSource.MonitorMode.OFF -> return
     }
     runCatching {
       track.setVolume(monitorVolume.coerceIn(0f, 1f))
