@@ -28,4 +28,5 @@ dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.github.pedroSG94.RootEncoder:library:2.8.1")
+    implementation("io.github.webrtc-sdk:android:150.7871.01")
 }
