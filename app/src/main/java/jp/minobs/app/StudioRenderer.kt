@@ -28,6 +28,7 @@ class StudioRenderer(private val context: Context) {
   private var service: ScreenStreamService? = null
   private val filters = ConcurrentHashMap<String, BaseFilterRender>()
   private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
+  private val whepInputs = ConcurrentHashMap<String, WhepVideoInput>()
   private val bitmaps = ConcurrentHashMap<String, Bitmap>()
   private val timers = ConcurrentHashMap<String, Runnable>()
   private val cameraSourceIds = mutableSetOf<String>()
@@ -51,6 +52,8 @@ class StudioRenderer(private val context: Context) {
       runCatching { player.release() }
     }
     mediaPlayers.clear()
+    whepInputs.values.forEach { runCatching { it.stop() } }
+    whepInputs.clear()
     if (cameraSourceIds.isNotEmpty()) stopServiceCamera()
     cameraSourceIds.clear()
     filters.values.forEach { filter -> runCatching { gl()?.removeFilter(filter) } }
@@ -83,9 +86,10 @@ class StudioRenderer(private val context: Context) {
       StudioSourceType.IMAGE, StudioSourceType.SLIDESHOW -> ImageFilterRender().apply {
         bitmaps[source.id]?.let { setImage(it) }
       }
-      StudioSourceType.MEDIA -> mediaFilter(source)
-      StudioSourceType.CAMERA -> cameraFilter(source)
-      StudioSourceType.BROWSER, StudioSourceType.EXTERNAL, StudioSourceType.SCREEN -> null
+      StudioSourceType.MEDIA -> mediaFilter(source, source.data)
+      StudioSourceType.CAMERA -> cameraFilter()
+      StudioSourceType.EXTERNAL -> externalFilter(source)
+      StudioSourceType.BROWSER, StudioSourceType.SCREEN -> null
     }
 
     if (filter != null) {
@@ -112,6 +116,7 @@ class StudioRenderer(private val context: Context) {
 
   fun remove(id: String) {
     if (cameraSourceIds.remove(id) && cameraSourceIds.isEmpty()) stopServiceCamera()
+    whepInputs.remove(id)?.let { runCatching { it.stop() } }
     filters.remove(id)?.let { runCatching { gl()?.removeFilter(it) } }
     timers.remove(id)?.let { main.removeCallbacks(it) }
     mediaPlayers.remove(id)?.let {
@@ -161,9 +166,32 @@ class StudioRenderer(private val context: Context) {
     filter.alpha = transform.alpha.coerceIn(0f, 1f)
   }
 
-  private fun cameraFilter(source: StudioSource): SurfaceFilterRender = SurfaceFilterRender { texture ->
+  private fun cameraFilter(): SurfaceFilterRender = SurfaceFilterRender { texture ->
     texture.setDefaultBufferSize(640, 480)
     startServiceCamera(texture)
+  }
+
+  private fun externalFilter(source: StudioSource): BaseFilterRender? {
+    val specs = buildList {
+      add(source.data.trim())
+      source.filters.filter { it.enabled }.forEach { add(it.name.trim()) }
+    }
+    val whep = specs.firstOrNull { it.startsWith("whep:", true) }
+    if (whep != null) {
+      val endpoint = whep.substringAfter(':').trim()
+      if (endpoint.isNotBlank()) {
+        val input = WhepVideoInput(context)
+        whepInputs[source.id] = input
+        return input.createFilter(endpoint) { status -> android.util.Log.d("MiniOBS-WHEP", status) }
+      }
+    }
+    val network = specs.firstOrNull {
+      it.startsWith("rtsp://", true) ||
+        it.startsWith("http://", true) ||
+        it.startsWith("https://", true) ||
+        it.startsWith("srt://", true)
+    }
+    return network?.let { mediaFilter(source, it) }
   }
 
   private fun startServiceCamera(texture: SurfaceTexture) {
@@ -186,16 +214,16 @@ class StudioRenderer(private val context: Context) {
     }
   }
 
-  private fun mediaFilter(source: StudioSource): SurfaceFilterRender? {
-    if (source.data.isBlank()) return null
+  private fun mediaFilter(source: StudioSource, location: String): SurfaceFilterRender? {
+    if (location.isBlank()) return null
     return SurfaceFilterRender { texture ->
       runCatching {
         texture.setDefaultBufferSize(1280, 720)
         val surface = Surface(texture)
         val player = MediaPlayer().apply {
-          setDataSource(context, Uri.parse(source.data))
+          setDataSource(context, Uri.parse(location))
           setSurface(surface)
-          isLooping = true
+          isLooping = !location.startsWith("rtsp://", true)
           setOnPreparedListener { it.start() }
           prepareAsync()
         }
