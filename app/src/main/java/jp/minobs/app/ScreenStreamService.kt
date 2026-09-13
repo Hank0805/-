@@ -84,6 +84,7 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
         const val EXTRA_REMOTE_URL = "remote_url"
         private const val CHANNEL_ID = "mini_obs_capture"
         private const val NOTIFICATION_ID = 41
+        private val RECONNECT_TOKEN = Any()
     }
 
     inner class LocalBinder : Binder() { fun service(): ScreenStreamService = this@ScreenStreamService }
@@ -209,7 +210,6 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
             setAudioVolumes(micVolume, internalVolume)
             applySceneFilters()
             startRemoteStudio()
-            // Replay buffer also keeps the capture/GL pipeline alive after the control Activity goes to background.
             mainHandler.postDelayed({ if (captureReady && !normalRecording) replay.start(30) }, 500)
             sendStatus("画面共有準備OK")
             true
@@ -447,9 +447,7 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
         return runCatching { if (engine.isRecording) engine.stopRecord(); true }.getOrDefault(false)
     }
 
-    fun setReplayEnabled(enabled: Boolean, seconds: Int = 30): Boolean {
-        return if (enabled) replay.start(seconds) else { replay.stop(); true }
-    }
+    fun setReplayEnabled(enabled: Boolean, seconds: Int = 30): Boolean = if (enabled) replay.start(seconds) else { replay.stop(); true }
 
     fun saveReplay(): Int {
         if (!captureReady) return 0
@@ -551,26 +549,24 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
         }
     }
 
-    override fun remoteCommand(command: String, args: Map<String, String>): String {
-        return when (command.lowercase()) {
-            "record" -> if (toggleRecording()) "record toggled" else "record failed"
-            "stream" -> { if (isStreamingNow()) stopRtmp() else if (lastEndpoints.isNotEmpty()) startMultiRtmp(lastEndpoints); "stream toggled" }
-            "replay" -> "saved ${saveReplay()} replay clips"
-            "replaytoggle" -> { val enabled = args["value"] != "0" && args["value"] != "false"; setReplayEnabled(enabled, args["seconds"]?.toIntOrNull() ?: 30); replay.status() }
-            "marker" -> "marker ${addMarker()}"
-            "privacy" -> { togglePrivacy(); "privacy=$privacyMode" }
-            "mute" -> { setMicrophoneMuted(!micMuted); "muted=$micMuted" }
-            "scene" -> { setActiveScene(args["value"].orEmpty()); activeScene }
-            "select" -> { selectedSource = when (args["value"]?.lowercase()) { "text" -> SourceKind.TEXT; "image" -> SourceKind.IMAGE; "camera" -> SourceKind.CAMERA; "external1" -> SourceKind.EXTERNAL1; "external2" -> SourceKind.EXTERNAL2; "external3" -> SourceKind.EXTERNAL3; else -> null }; "selected=$selectedSource" }
-            "move" -> { moveSelectedSource(args["dx"]?.toFloatOrNull() ?: 0f, args["dy"]?.toFloatOrNull() ?: 0f); "moved" }
-            "scale" -> { setSelectedScale(args["value"]?.toFloatOrNull() ?: 28f); "scaled" }
-            "micvolume" -> { setAudioVolumes((args["value"]?.toFloatOrNull() ?: 100f) / 100f, internalVolume); "mic=$micVolume" }
-            "internalvolume" -> { setAudioVolumes(micVolume, (args["value"]?.toFloatOrNull() ?: 100f) / 100f); "internal=$internalVolume" }
-            "chat", "alert" -> { pushChat(if (command == "alert") "ALERT" else "REMOTE", args["text"].orEmpty()); "sent" }
-            "autoscene" -> { setAutoSceneEnabled(args["value"] != "false" && args["value"] != "0"); "auto scene updated" }
-            "adaptive" -> { adaptiveBitrate = args["value"] != "false" && args["value"] != "0"; "adaptive=$adaptiveBitrate" }
-            else -> "unknown command"
-        }
+    override fun remoteCommand(command: String, args: Map<String, String>): String = when (command.lowercase()) {
+        "record" -> if (toggleRecording()) "record toggled" else "record failed"
+        "stream" -> { if (isStreamingNow()) stopRtmp() else if (lastEndpoints.isNotEmpty()) startMultiRtmp(lastEndpoints); "stream toggled" }
+        "replay" -> "saved ${saveReplay()} replay clips"
+        "replaytoggle" -> { val enabled = args["value"] != "0" && args["value"] != "false"; setReplayEnabled(enabled, args["seconds"]?.toIntOrNull() ?: 30); replay.status() }
+        "marker" -> "marker ${addMarker()}"
+        "privacy" -> { togglePrivacy(); "privacy=$privacyMode" }
+        "mute" -> { setMicrophoneMuted(!micMuted); "muted=$micMuted" }
+        "scene" -> { setActiveScene(args["value"].orEmpty()); activeScene }
+        "select" -> { selectedSource = when (args["value"]?.lowercase()) { "text" -> SourceKind.TEXT; "image" -> SourceKind.IMAGE; "camera" -> SourceKind.CAMERA; "external1" -> SourceKind.EXTERNAL1; "external2" -> SourceKind.EXTERNAL2; "external3" -> SourceKind.EXTERNAL3; else -> null }; "selected=$selectedSource" }
+        "move" -> { moveSelectedSource(args["dx"]?.toFloatOrNull() ?: 0f, args["dy"]?.toFloatOrNull() ?: 0f); "moved" }
+        "scale" -> { setSelectedScale(args["value"]?.toFloatOrNull() ?: 28f); "scaled" }
+        "micvolume" -> { setAudioVolumes((args["value"]?.toFloatOrNull() ?: 100f) / 100f, internalVolume); "mic=$micVolume" }
+        "internalvolume" -> { setAudioVolumes(micVolume, (args["value"]?.toFloatOrNull() ?: 100f) / 100f); "internal=$internalVolume" }
+        "chat", "alert" -> { pushChat(if (command == "alert") "ALERT" else "REMOTE", args["text"].orEmpty()); "sent" }
+        "autoscene" -> { setAutoSceneEnabled(args["value"] != "false" && args["value"] != "0"); "auto scene updated" }
+        "adaptive" -> { adaptiveBitrate = args["value"] != "false" && args["value"] != "0"; "adaptive=$adaptiveBitrate" }
+        else -> "unknown command"
     }
 
     override fun remoteStatus(): JSONObject {
@@ -703,6 +699,4 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
     override fun onDisconnect() { if (!intentionalStreamStop) sendStatus("配信切断") else sendStatus("配信停止") }
     override fun onAuthError() = sendStatus("RTMP認証エラー")
     override fun onAuthSuccess() = sendStatus("RTMP認証成功")
-
-    private companion object { private val RECONNECT_TOKEN = Any() }
 }
