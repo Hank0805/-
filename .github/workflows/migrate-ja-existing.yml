@@ -1,0 +1,49 @@
+name: Migrate existing Mini OBS labels to Japanese
+
+on:
+  push:
+    branches: [ v0.5-obs-studio ]
+    paths: [ '.github/migrate-ja-trigger.txt' ]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v0.5-obs-studio
+      - name: Add legacy label migration
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('app/src/main/java/jp/minobs/app/StudioWorkspace.kt')
+          s = p.read_text(encoding='utf-8')
+          marker = '  var selectedSourceId: String? = null\n\n'
+          block = '''  init {\n    migrateLegacyJapaneseLabels()\n    autosave()\n  }\n\n  private fun migrateLegacyJapaneseLabels() {\n    if (project.name == "Mini OBS Project") project.name = "Mini OBS プロジェクト"\n    val sceneNames = mapOf("GAME" to "ゲーム", "TALK" to "雑談", "WAIT" to "待機")\n    val sourceNames = mapOf(\n      "Screen Capture" to "画面キャプチャ",\n      "Starting Soon" to "まもなく開始",\n      "Text" to "テキスト",\n      "Image" to "画像",\n      "Camera" to "カメラ",\n      "Browser" to "ブラウザ",\n      "Media" to "メディア",\n      "Slideshow" to "スライドショー",\n      "Clock" to "時計",\n      "Timer" to "タイマー",\n      "Remote Camera" to "リモートカメラ",\n      "Chat" to "チャット",\n      "Title Card" to "タイトルカード"\n    )\n    project.scenes.forEach { scene ->\n      sceneNames[scene.name]?.let { scene.name = it }\n      scene.sources.forEach { source -> sourceNames[source.name]?.let { source.name = it } }\n    }\n    project.globalSources.forEach { source -> sourceNames[source.name]?.let { source.name = it } }\n  }\n\n'''
+          if 'migrateLegacyJapaneseLabels' not in s:
+              if marker not in s:
+                  raise SystemExit('Workspace insertion marker not found')
+              s = s.replace(marker, marker + block, 1)
+              p.write_text(s, encoding='utf-8')
+
+          p = Path('app/build.gradle.kts')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('versionCode = 7', 'versionCode = 8')
+          s = s.replace('versionName = "0.5.1"', 'versionName = "0.5.2"')
+          p.write_text(s, encoding='utf-8')
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app
+          if git diff --cached --quiet; then
+            echo "No migration changes"
+          else
+            git commit -m "Migrate existing workspace labels to Japanese v0.5.2"
+            git push origin HEAD:v0.5-obs-studio
+          fi
