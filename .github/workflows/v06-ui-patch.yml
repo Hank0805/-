@@ -2,9 +2,10 @@ name: Integrate v0.6 Studio UI
 
 on:
   push:
-    branches: [ v0.6-studio-actual ]
+    branches:
+      - v0.6-studio-actual
     paths:
-      - .github/v06-ui-trigger.txt
+      - '.github/v06-ui-trigger.txt'
 
 permissions:
   contents: write
@@ -13,139 +14,15 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Apply v0.6 UI integrations
-        shell: bash
-        run: |
-          echo 'CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgcmUKCnAgPSBQYXRoKCJhcHAvc3JjL21haW4vamF2YS9qcC9taW5vYnMvYXBwL09ic1N0dWRpb0FjdGl2aXR5Lmt0IikKcyA9IHAucmVhZF90ZXh0KCkKCm5lZWRsZSA9ICIgIHByaXZhdGUgbGF0ZWluaXQgdmFyIGF1dG9tYXRpb246IFN0dWRpb0F1dG9tYXRpb25cbiIKaWYgInByaXZhdGUgbGF0ZWluaXQgdmFyIHVpRW5oYW5jZXI6IFN0dWRpb1VpRW5oYW5jZXIiIG5vdCBpbiBzOgogICAgcyA9IHMucmVwbGFjZShuZWVkbGUsIG5lZWRsZSArICIgIHByaXZhdGUgbGF0ZWluaXQgdmFyIHVpRW5oYW5jZXI6IFN0dWRpb1VpRW5oYW5jZXJcbiIpCgpvbGQgPSAnJycgICAgYmluZGluZy5wcm9ncmFtU3VyZmFjZS5ob2xkZXIuYWRkQ2FsbGJhY2sodGhpcykKICAgIHNldHVwVWkoKQogICAgZW5zdXJlU2VydmljZSgpCiAgICByZWZyZXNoQWxsKCkKJycnCm5ldyA9ICcnJyAgICBiaW5kaW5nLnByb2dyYW1TdXJmYWNlLmhvbGRlci5hZGRDYWxsYmFjayh0aGlzKQogICAgc2V0dXBVaSgpCiAgICB1aUVuaGFuY2VyID0gU3R1ZGlvVWlFbmhhbmNlcigKICAgICAgYWN0aXZpdHkgPSB0aGlzLAogICAgICBiaW5kaW5nID0gYmluZGluZywKICAgICAgd29ya3NwYWNlID0gd29ya3NwYWNlLAogICAgICByZW5kZXJlciA9IHJlbmRlcmVyLAogICAgICBvblJlZnJlc2ggPSA6OnJlZnJlc2hBbGwsCiAgICAgIG9uUmVidWlsZCA9IDo6cmVidWlsZFByb2dyYW0sCiAgICAgIG9uUHJlZmxpZ2h0ID0gOjpzaG93UHJlZmxpZ2h0LAogICAgICBvbkVuZHBvaW50ID0gOjpzaG93RW5kcG9pbnREaWFsb2cKICAgICkKICAgIHVpRW5oYW5jZXIuaW5zdGFsbCgpCiAgICBlbnN1cmVTZXJ2aWNlKCkKICAgIHJlZnJlc2hBbGwoKQonJycKaWYgb2xkIGluIHM6CiAgICBzID0gcy5yZXBsYWNlKG9sZCwgbmV3KQplbGlmICJ1aUVuaGFuY2VyLmluc3RhbGwoKSIgbm90IGluIHM6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJvbkNyZWF0ZSBob29rIG5vdCBmb3VuZCIpCgpuZXdfYWRkID0gJycnICBwcml2YXRlIGZ1biBzaG93QWRkU291cmNlKCkgewogICAgdmFsIGxhYmVscyA9IGFycmF5T2YoCiAgICAgICLjg4bjgq3jgrnjg4giLCAi55S75YOPIiwgIuOCq+ODoeODqSIsICJVU0Ljgq3jg6Pjg5fjg4Hjg6MiLCAi44OW44Op44Km44K2IiwgIuODoeODh+OCoOOCoiAvIOWLleeUuyIsCiAgICAgICLjgrnjg6njgqTjg4njgrfjg6fjg7wiLCAi5pmC6KiIIiwgIuOCv+OCpOODnuODvCIsICLjg6rjg6Ljg7zjg4jjgqvjg6Hjg6kiLCAi44OB44Oj44OD44OI6KGo56S6IiwgIuOCv+OCpOODiOODq+OCq+ODvOODiSIKICAgICkKICAgIEFsZXJ0RGlhbG9nLkJ1aWxkZXIodGhpcykuc2V0VGl0bGUoIuOCveODvOOCueOCkui/veWKoCIpLnNldEl0ZW1zKGxhYmVscykgeyBfLCBpbmRleCAtPgogICAgICB3aGVuIChpbmRleCkgewogICAgICAgIDAgLT4gZGlhbG9ncy50ZXh0KCLjg4bjgq3jgrnjg4giKSB7CiAgICAgICAgICB3b3Jrc3BhY2UuYWRkU291cmNlKFN0dWRpb1NvdXJjZVR5cGUuVEVYVCwgIuODhuOCreOCueODiCIsIGl0KTsgcmVmcmVzaFNvdXJjZXMoKTsgcmVidWlsZFByb2dyYW0oKQogICAgICAgIH0KICAgICAgICAxIC0+IHsKICAgICAgICAgIHZhbCBzb3VyY2UgPSB3b3Jrc3BhY2UuYWRkU291cmNlKFN0dWRpb1NvdXJjZVR5cGUuSU1BR0UsICLnlLvlg48iKQogICAgICAgICAgcGVuZGluZ0ltYWdlSWQgPSBzb3VyY2UuaWQKICAgICAgICAgIGltYWdlTGF1bmNoZXIubGF1bmNoKGFycmF5T2YoImltYWdlLyoiKSkKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCkKICAgICAgICB9CiAgICAgICAgMiAtPiB7CiAgICAgICAgICB3b3Jrc3BhY2UuYWRkU291cmNlKFN0dWRpb1NvdXJjZVR5cGUuQ0FNRVJBLCAn5Y2h44Oh44OpJykKICAgICAgICAgIHJlcXVlc3RDYW1lcmEoKQogICAgICAgICAgcmVmcmVzaFNvdXJjZXMoKTsgcmVidWlsZFByb2dyYW0oKQogICAgICAgIH0KICAgICAgICAzIC0+IHsKICAgICAgICAgIHdvcmtzcGFjZS5hZGRTb3VyY2UoU3R1ZGlvU291cmNlVHlwZS5VU0JfQ0FQVFVSRSwgIlVTQuOCreODo+ODl+ODo+ODg+ODg+ODqSIsICJ1c2I6IikKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCk7IHJlYnVpbGRQcm9ncmFtKCkKICAgICAgICAgIHRvYXN0KCJVVkPlr77lv5zjgq3jg6Pjg5fjg4Hjg6Pjg7zjg5zjg7zjg4njgpVVU0ItQ+OBuOaOpee2muOBl+OBpuOBj+OBoOOBleOBhCIpCiAgICAgICAgfQogICAgICAgIDQgLT4gZGlhbG9ncy50ZXh0KCLjg5bjg6njgqbjgrbVUkwiKSB7CiAgICAgICAgICB2YWwgc291cmNlID0gd29ya3NwYWNlLmFkZFNvdXJjZShTdHVkaW9Tb3VyY2VUeXBlLkJST1dTRVIsICLjg5bjg6njgqbjgrYiLCBpdCkKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCk7IGR5bmFtaWMuc3RhcnRCcm93c2VyKHNvdXJjZSkKICAgICAgICB9CiAgICAgICAgNSAtPiB7CiAgICAgICAgICB2YWwgc291cmNlID0gd29ya3NwYWNlLmFkZFNvdXJjZShTdHVkaW9Tb3VyY2VUeXBlLk1FRElBLCAn44Oh44OH44Kj44KiJykKICAgICAgICAgIHBlbmRpbmdNZWRpYUlkID0gc291cmNlLmlkCiAgICAgICAgICBtZWRpYUxhdW5jaGVyLmxhdW5jaChhcnJheU9mKCJ2aWRlby8qIiwgImF1ZGlvLyoiKSkKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCkKICAgICAgICB9CiAgICAgICAgNiAtPiB7CiAgICAgICAgICB2YWwgc291cmNlID0gd29ya3NwYWNlLmFkZFNvdXJjZShTdHVkaW9Tb3VyY2VUeXBlLlNMSURFU0hPVywgIuOCueODqeOCpOODieOCt+ODp+ODvCIpCiAgICAgICAgICBwZW5kaW5nU2xpZGVJZCA9IHNvdXJjZS5pZAogICAgICAgICAgc2xpZGVzTGF1bmNoZXIubGF1bmNoKGFycmF5T2YoImltYWdlLyoiKSkKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCkKICAgICAgICB9CiAgICAgICAgNyAtPiB7CiAgICAgICAgICB3b3Jrc3BhY2UuYWRkU291cmNlKFN0dWRpb1NvdXJjZVR5cGUuQ0xPQ0ssICLmmYLoqIgiLCAiSEg6bW06c3MiKQogICAgICAgICAgcmVmcmVzaFNvdXJjZXMoKTsgcmVidWlsZFByb2dyYW0oKQogICAgICAgIH0KICAgICAgICA4IC0+IHsKICAgICAgICAgIHdvcmtzcGFjZS5hZGRTb3VyY2UoU3R1ZGlvU291cmNlVHlwZS5USU1FUiwgIuOCv+OCpOODnuODvCIsICIke1N5c3RlbS5jdXJyZW50VGltZU1pbGxpcygpfXwwIikKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCk7IHJlYnVpbGRQcm9ncmFtKCkKICAgICAgICB9CiAgICAgICAgOSAtPiB7CiAgICAgICAgICB3b3Jrc3BhY2UuYWRkU291cmNlKFN0dWRpb1NvdXJjZVR5cGUuRVhURVJOQUwsICLjg6rjg6Ljg7zjg4jjgqvjg6Hjg6kiLCAicmVtb3RlOjEiKQogICAgICAgICAgcmVmcmVzaFNvdXJjZXMoKTsgdG9hc3QoIuOCq+ODoeODqeODjuODvOODiSAvIOODquODouODvOODiOOCueOCv+OCuOOCquOBi+OCieaOpee2muOBl+OBpuOBj+OBoOOBleOBhCIpCiAgICAgICAgfQogICAgICAgIDEwIC0+IHsKICAgICAgICAgIHdvcmtzcGFjZS5hZGRTb3VyY2UoU3R1ZGlvU291cmNlVHlwZS5DSEFULCAi44OB44Oj44OD44OI5Y2K5o+QIiwgIuODgeODo+ODg+ODiOihqOekuiIpCiAgICAgICAgICByZWZyZXNoU291cmNlcygpOyByZWJ1aWxkUHJvZ3JhbSgpCiAgICAgICAgfQogICAgICAgIDExIC0+IGRpYWxvZ3MudGV4dCgi44K/44Kk44OI44OrIikgewogICAgICAgICAgdmFsIHNvdXJjZSA9IHdvcmtzcGFjZS5hZGRTb3VyY2UoU3R1ZGlvU291cmNlVHlwZS5URVhULCAi44K/44Kk44OI44Or44Kr44O844OJIiwgaXQpCiAgICAgICAgICBzb3VyY2UudHJhbnNmb3JtID0gU3R1ZGlvVHJhbnNmb3JtKDEyZiwgMzhmLCA3NmYsIDIwZikKICAgICAgICAgIHJlZnJlc2hTb3VyY2VzKCk7IHJlYnVpbGRQcm9ncmFtKCkKICAgICAgICB9CiAgICAgIH0KICAgIH0uc2hvdygpCiAgfQoKJycnCnMsIG4gPSByZS5zdWJuKHInICBwcml2YXRlIGZ1biBzaG93QWRkU291cmNlXFwoXFwpIFxcey4qP1xuICBcXH1cblxuKD89ICBwcml2YXRlIGZ1biByZWZyZXNoQWxsKScsIG5ld19hZGQsIHMsIGNvdW50PTEsIGZsYWdzPXJlLlMpCmlmIG4gIT0gMToKICAgIHJhaXNlIFN5c3RlbUV4aXQoZiJzaG93QWRkU291cmNlIHJlcGxhY2UgZmFpbGVkIHtufSIpCgpuZXdfc2NlbmVzID0gJycnICBwcml2YXRlIGZ1biByZWZyZXNoU2NlbmVzKCkgewogICAgYmluZGluZy5zY2VuZUxpc3QucmVtb3ZlQWxsVmlld3MoKQogICAgdmFsIGRlbnNpdHkgPSByZXNvdXJjZXMuZGlzcGxheU1ldHJpY3MuZGVuc2l0eQogICAgd29ya3NwYWNlLnByb2plY3Quc2NlbmVzLmZvckVhY2ggeyBzY2VuZSAtPgogICAgICB2YWwgcm93ID0gTGluZWFyTGF5b3V0KHRoaXMpLmFwcGx5IHsKICAgICAgICBvcmllbnRhdGlvbiA9IExpbmVhckxheW91dC5IT1JJWk9OVEFMCiAgICAgICAgZ3Jhdml0eSA9IGFuZHJvaWQudmlldy5HcmF2aXR5LkNFTlRFUl9WRVJUSUNBTAogICAgICB9CiAgICAgIHZhbCB0aHVtYiA9IGFuZHJvaWQud2lkZ2V0LkltYWdlVmlldyh0aGlzKS5hcHBseSB7CiAgICAgICAgc2V0SW1hZ2VCaXRtYXAoU3R1ZGlvQWR2YW5jZWREaWFsb2dzLnNjZW5lVGh1bWJuYWlsKHNjZW5lLCB3b3Jrc3BhY2UucHJvamVjdC5nbG9iYWxTb3VyY2VzKSkKICAgICAgICBzY2FsZVR5cGUgPSBhbmRyb2lkLndpZGdldC5JbWFnZVZpZXcuU2NhbGVUeXBlLkNFTlRFUl9DUk9QCiAgICAgICAgc2V0UGFkZGluZygyLCAyLCA0LCAyKQogICAgICB9CiAgICAgIHZhbCBidXR0b24gPSBCdXR0b24odGhpcykuYXBwbHkgewogICAgICAgIHRleHQgPSBidWlsZFN0cmluZyB7CiAgICAgICAgICBpZiAod29ya3NwYWNlLnByb2plY3QucHJvZ3JhbVNjZW5lSWQgPT0gc2NlbmUuaWQpIGFwcGVuZCgi4pagICIpCiAgICAgICAgICBpZiAod29ya3NwYWNlLnByb2plY3QucHJldmlld1NjZW5lSWQgPT0gc2NlbmUuaWQpIGFwcGVuZCgi4pa2ICIpCiAgICAgICAgICBhcHBlbmQoc2NlbmUubmFtZSkKICAgICAgICB9CiAgICAgICAgc2V0QWxsQ2FwcyhmYWxzZSkKICAgICAgICBtYXhMaW5lcyA9IDIKICAgICAgICBzZXRPbkNsaWNrTGlzdGVuZXIgewogICAgICAgICAgd29ya3NwYWNlLnNlbGVjdGVkU2NlbmVJZCA9IHNjZW5lLmlkCiAgICAgICAgICBpZiAod29ya3NwYWNlLnByb2plY3Quc3R1ZGlvTW9kZSkgewogICAgICAgICAgICB3b3Jrc3BhY2UucHJvamVjdC5wcmV2aWV3U2NlbmVJZCA9IHNjZW5lLmlkCiAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICB3b3Jrc3BhY2UucHJvamVjdC5wcm9ncmFtU2NlbmVJZCA9IHNjZW5lLmlkCiAgICAgICAgICAgIHJlYnVpbGRQcm9ncmFtKCkKICAgICAgICAgIH0KICAgICAgICAgIHdvcmtzcGFjZS5hdXRvc2F2ZSgpCiAgICAgICAgICByZWZyZXNoQWxsKCkKICAgICAgICB9CiAgICAgICAgc2V0T25Mb25nQ2xpY2tMaXN0ZW5lciB7CiAgICAgICAgICBTdHVkaW9BZHZhbmNlZERpYWxvZ3Muc2hvd1NjZW5lVHJhbnNpdGlvbih0aGlzQE9ic1N0dWRpb0FjdGl2aXR5LCBzY2VuZSwgd29ya3NwYWNlLnByb2plY3QpIHsKICAgICAgICAgICAgd29ya3NwYWNlLmF1dG9zYXZlKCkKICAgICAgICAgICAgcmVmcmVzaFNjZW5lcygpCiAgICAgICAgICB9CiAgICAgICAgICB0cnVlCiAgICAgICAgfQogICAgICB9CiAgICAgIHJvdy5hZGRWaWV3KHRodW1iLCBMaW5lYXJMYXlvdXQuTGF5b3V0UGFyYW1zKCg3NiAqIGRlbnNpdHkpLnRvSW50KCksICg0NCAqIGRlbnNpdHkpLnRvSW50KCkpKQogICAgICByb3cuYWRkVmlldyhidXR0b24sIExpbmVhckxheW91dC5MYXlvdXRQYXJhbXMoMCwgKDUyICogZGVuc2l0eSkudG9JbnQoKSwgMWYpKQogICAgICBiaW5kaW5nLnNjZW5lTGlzdC5hZGRWaWV3KHJvdykKICAgIH0KICB9CgonJycKcywgbj0gcmUuc3VibihyJyAgcHJpdmF0ZSBmdW4gcmVmcmVzaFNjZW5lc1xcKFxcKSBcXHsuKj9cbiAgXFx9XG5cbig/PSAgcHJpdmF0ZSBmdW4gcmVmcmVzaFNvdXJjZXMpJywgbmV3X3NjZW5lcywgc2NvdW50PTEsIGZsYWdzPXJlLlMpCmlmIG4gIT0gMToKICAgIHJhaXNlIFN5c3RlbUV4aXQoZiJyZWZyZXNoU2NlbmVzIHJlcGxhY2UgZmFpbGVkIHtufSIpCgpuZXdfc291cmNlcyA9ICcnJyAgcHJpdmF0ZSBmdW4gcmVmcmVzaFNvdXJjZXMoKSB7CiAgICBiaW5kaW5nLnNvdXJjZUxpc3QucmVtb3ZlQWxsVmlld3MoKQogICAgdmFsIHNjZW5lID0gd29ya3NwYWNlLnNjZW5lKCkgPzogcmV0dXJuCiAgICB2YWwgbGlzdCA9IG11dGFibGVMaXN0T2Y8U3R1ZGlvU291cmNlPigpLmFwcGx5IHsKICAgICAgYWRkQWxsKHNjZW5lLnNvdXJjZXMpCiAgICAgIGFkZEFsbCh3b3Jrc3BhY2UucHJvamVjdC5nbG9iYWxTb3VyY2VzKQogICAgfQogICAgbGlzdC5hc1JldmVyc2VkKCkuZm9yRWFjaCB7IHNvdXJjZSAtPgogICAgICB2YWwgcm93ID0gTGluZWFyTGF5b3V0KHRoaXMpLmFwcGx5IHsgb3JpZW50YXRpb24gPSBMaW5lYXJMYXlvdXQuSE9SSVpPTlRBTCB9CiAgICAgIHZhbCBleWUgPSBCdXR0b24odGhpcykuYXBwbHkgewogICAgICAgIHRleHQgPSBpZiAoc291cmNlLnZpc2libGUpICLwn5GBIiBlbHNlICLil4siCiAgICAgICAgbWluV2lkdGggPSAwCiAgICAgICAgc2V0T25DbGlja0xpc3RlbmVyIHsKICAgICAgICAgIHdvcmtzcGFjZS5jaGVja3BvaW50KCkKICAgICAgICAgIHNvdXJjZS52aXNpYmxlID0gIXNvdXJjZS52aXNpYmxlCiAgICAgICAgICB3b3Jrc3BhY2UuYXV0b3NhdmUoKQogICAgICAgICAgcmVuZGVyZXIudXBkYXRlVmlzaWJpbGl0eShzb3VyY2UpCiAgICAgICAgICByZWZyZXNoU291cmNlcygpCiAgICAgICAgfQogICAgICB9CiAgICAgIHZhbCBuYW1lID0gQnV0dG9uKHRoaXMpLmFwcGx5IHsKICAgICAgICB0ZXh0ID0gYnVpbGRTdHJpbmcgewogICAgICAgICAgYXBwZW5kKFN0dWRpb0FkdmFuY2VkRGlhbG9ncy5zb3VyY2VJY29uKHNvdXJjZS50eXBlKSkuYXBwZW5kKCIgIikKICAgICAgICAgIGlmIChzb3VyY2UubG9ja2VkKSBhcHBlbmQoIvCflJIiKS5hcHBlbmQoIiAiKQogICAgICAgICAgaWYgKHNvdXJjZS5nbG9iYWwpIGFwcGVuZCgi8J+MjSAiKQogICAgICAgICAgaWYgKCFzb3VyY2UuZ3JvdXBJZC5pc051bGxPckJsYW5rKCkpIGFwcGVuZCgi8J+UlyAiKQogICAgICAgICAgYXBwZW5kKHNvdXJjZS5uYW1lKQogICAgICAgIH0KICAgICAgICBzZXRBbGxDYXBzKGZhbHNlKQogICAgICAgIG1heExpbmVzID0gMgogICAgICAgIHNldE9uQ2xpY2tMaXN0ZW5lciB7IHNlbGVjdFNvdXJjZShzb3VyY2UpIH0KICAgICAgICBzZXRPbkxvbmdDbGlja0xpc3RlbmVyIHsgc2hvd1NvdXJjZU1lbnUoc291cmNlKTsgdHJ1ZSB9CiAgICAgIH0KICAgICAgcm93LmFkZFZpZXcoZXllLCBMaW5lYXJMYXlvdXQuTGF5b3V0UGFyYW1zKDU0LCA1MikpCiAgICAgIHJvdy5hZGRWaWV3KG5hbWUsIExpbmVhckxheW91dC5MYXlvdXRQYXJhbXMoMCwgNTIsIDFmKSkKICAgICAgYmluZGluZy5zb3VyY2VMaXN0LmFkZFZpZXcocm93KQogICAgfQogICAgaWYgKDo6dWlFbmhhbmNlci5pc0luaXRpYWxpemVkKSB1aUVuaGFuY2VyLnJlZnJlc2hTZWxlY3RlZFNvdXJjZUNvc3QoKQogIH0KCicnJwpzLCBuID0gcmUuc3VibihyJyAgcHJpdmF0ZSBmdW4gcmVmcmVzaFNvdXJjZXNcXChcXCkgXFx7Lio/XG4gIFxcfVxuXG4oPz0gIHByaXZhdGUgZnVuIHNlbGVjdFNvdXJjZSknLCBuZXdfc291cmNlcywgcywgY291bnQ9MSwgZmxhZ3M9cmUuUykKaWYgbiAhPSAxOgogICAgcmFpc2UgU3lzdGVtRXhpdChmInJlZnJlc2hTb3VyY2VzIHJlcGxhY2UgZmFpbGVkIHtufSIpCgpuZWVkbGUgPSAnICAgIGlmIChzb3VyY2UgIT0gbnVsbCkgdXBkYXRlVHJhbnNmb3JtVGV4dChzb3VyY2UpIGVsc2UgYmluZGluZy50eHRUcmFuc2Zvcm1WYWx1ZXMudGV4dCA9ICLjgr3jg7zjgrnjgYzpgbjmip7jgZXjgozjgabjgYTjgb7jgZvjgpMiXG4nCnNlZ21lbnQgPSBzW3MuZmluZCgiICBwcml2YXRlIGZ1biByZWZyZXNoUHJvcGVydGllcyIpOnMuZmluZCgiICBwcml2YXRlIGZ1biB1cGRhdGVUcmFuc2Zvcm1UZXh0IildCmlmIG5lZWRsZSBpbiBzIGFuZCAidWlFbmhhbmNlci5yZWZyZXNoU2VsZWN0ZWRTb3VyY2VDb3N0KCkiIG5vdCBpbiBzZWdtZW50OgogICAgcyA9IHMucmVwbGFjZShuZWVkbGUsIG5lZWRsZSArICcgICAgaWYgKDo6dWlFbmhhbmNlci5pc0luaXRpYWxpemVkKSB1aUVuaGFuY2VyLnJlZnJlc2hTZWxlY3RlZFNvdXJjZUNvc3QoKVxuJywgMSkKCm5ld19tZW51ID0gJycnICBwcml2YXRlIGZ1biBzaG93U291cmNlTWVudShzb3VyY2U6IFN0dWRpb1NvdXJjZSkgewogICAgd29ya3NwYWNlLnNlbGVjdGVkU291cmNlSWQgPSBzb3VyY2UuaWQKICAgIGJpbmRpbmcudHJhbnNmb3JtT3ZlcmxheS5zZWxlY3Qoc291cmNlKQogICAgdmFsIGl0ZW1zID0gYXJyYXlPZigKICAgICAgIuWQjeWJjeOCkuWkieabtCIsICL複製", "変形", "クロップ", "フィルター", "グループ / 解除",
-      "プリセット保存", "グローバル切替", "変形をリセット", "削除"
-    )
-    AlertDialog.Builder(this).setTitle(source.name).setItems(items) { _, index ->
-      when (index) {
-        0 -> dialogs.text("名前を変更", source.name) { source.name = it; workspace.autosave(); refreshSources() }
-        1 -> { workspace.duplicateSource(source.id); refreshSources(); rebuildProgram() }
-        2 -> {
-          workspace.checkpoint()
-          StudioAdvancedDialogs.showTransform(this, source) {
-            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
-          }
-        }
-        3 -> {
-          workspace.checkpoint()
-          StudioAdvancedDialogs.showCrop(this, source) {
-            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
-          }
-        }
-        4 -> showFilters()
-        5 -> {
-          if (!source.groupId.isNullOrBlank()) {
-            workspace.ungroup(source.groupId); refreshSources()
-          } else {
-            workspace.scene()?.let { scene ->
-              StudioAdvancedDialogs.showGroup(this, scene, workspace) { refreshSources() }
-            }
-          }
-        }
-        6 -> dialogs.text("プリセット名", source.name) { workspace.savePreset(it, source); toast("プリセットを保存しました") }
-        7 -> { workspace.toggleGlobal(source.id); refreshSources(); rebuildProgram() }
-        8 -> {
-          workspace.checkpoint(); source.transform = StudioTransform(); workspace.autosave()
-          rebuildProgram(); selectSource(source)
-        }
-        9 -> { renderer.remove(source.id); workspace.removeSource(source.id); refreshSources(); rebuildProgram() }
-      }
-    }.show()
-  }
-
-'''
-s, n = re.subn(r'  private fun showSourceMenu\(source: StudioSource\) \{.*?\n  \}\n\n(?=  private fun showFilters)', new_menu, s, count=1, flags=re.S)
-if n != 1:
-    raise SystemExit(f"source menu replace failed {n}")
-
-new_filters = '''  private fun showFilters() {
-    val source = workspace.source() ?: return
-    val items = arrayOf(
-      "クロマキー", "右へ90°回転", "不透明度 100%", "不透明度 50%",
-      "フェードイン", "スライドイン", "フィルター名を追加"
-    )
-    AlertDialog.Builder(this).setTitle("フィルター — ${source.name}").setItems(items) { _, index ->
-      workspace.checkpoint()
-      when (index) {
-        0 -> {
-          StudioAdvancedDialogs.showChroma(this, source) {
-            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
-          }
-          return@setItems
-        }
-        1 -> source.transform.rotation = (source.transform.rotation + 90) % 360
-        2 -> source.transform.alpha = 1f
-        3 -> source.transform.alpha = .5f
-        4 -> animateSource(source, true)
-        5 -> animateSource(source, false)
-        6 -> dialogs.text("フィルター名") { source.filters += StudioFilter(it); workspace.autosave(); toast("フィルターを更新しました") }
-      }
-      workspace.autosave(); renderer.updateTransform(source); refreshProperties()
-    }.show()
-  }
-
-'''
-s, n = re.subn(r'  private fun showFilters\(\) \{.*?\n  \}\n\n(?=  private fun animateSource)', new_filters, s, count=1, flags=re.S)
-if n != 1:
-    raise SystemExit(f"filters replace failed {n}")
-
-old = '''    val duration = workspace.project.transitionMs.toLong()
-    if (workspace.project.transition == StudioTransition.CUT) {
-      rebuildProgram()
-    } else {
-'''
-new = '''    val targetScene = workspace.project.scenes.firstOrNull { it.id == id }
-    val transition = targetScene?.transitionOverride ?: workspace.project.transition
-    val duration = (targetScene?.transitionMsOverride ?: workspace.project.transitionMs).toLong()
-    if (transition == StudioTransition.CUT) {
-      rebuildProgram()
-    } else {
-'''
-if old in s:
-    s = s.replace(old, new, 1)
-
-s, n = re.subn(
-    r'  private fun showEndpointDialog\(\) \{.*?\n  \}\n\n(?=  private fun showPerformance)',
-    '''  private fun showEndpointDialog() {
-    StreamEndpointSettings.show(this) { toast("配信先設定を保存しました") }
-  }
-
-''',
-    s, count=1, flags=re.S
-)
-if n != 1:
-    raise SystemExit(f"endpoint dialog replace failed {n}")
-
-s, n = re.subn(
-    r'  private fun getEndpoints\(\): List<String> =.*?\n  \}\n\n(?=  private fun requestCapture)',
-    '''  private fun getEndpoints(): List<String> = StreamEndpointSettings.endpoints(this)
-
-''',
-    s, count=1, flags=re.S
-)
-if n != 1:
-    raise SystemExit(f"endpoint storage replace failed {n}")
-
-s = s.replace(
-    'toast("出力設定でRTMP URLを設定してください")',
-    'toast("出力設定で配信サーバーURLとストリームキーを設定してください")'
-)
-
-p.write_text(s)
-
-u = Path("app/src/main/java/jp/minobs/app/StudioUiEnhancer.kt")
-t = u.read_text().replace("import android.widget.AlertDialog", "import android.app.AlertDialog")
-u.write_text(t)
-' | base64 -d > /tmp/patch.py
-          python3 /tmp/patch.py
-      - name: Commit integrated UI
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply UI patch
+        run: python3 .github/scripts/v06_ui_patch.py
+      - name: Commit UI integration
         run: |
           git config user.name "Hank0805"
           git config user.email "actions@users.noreply.github.com"
           git add app/src/main/java/jp/minobs/app/ObsStudioActivity.kt app/src/main/java/jp/minobs/app/StudioUiEnhancer.kt
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "Integrate v0.6 responsive OBS controls"
           git push
