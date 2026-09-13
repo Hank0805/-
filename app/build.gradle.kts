@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "jp.minobs.app"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "jp.minobs.app"
