@@ -1,0 +1,1 @@
+Trigger GitHub Actions build for Mini OBS v0.1
