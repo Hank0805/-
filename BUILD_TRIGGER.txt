@@ -1,2 +1,2 @@
 Trigger GitHub Actions build for Mini OBS v0.6.0
-Integrated responsive OBS UI, USB capture, crop/chroma, grouping, workspace, separate stream settings
+Verify integrated independent audio mixer, USB audio delay/monitoring, and thermal protection
