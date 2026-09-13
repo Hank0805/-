@@ -20,11 +20,11 @@ class StudioAutomation(
 
   fun smartAction() {
     val service = serviceProvider()
-    if (service?.isCaptureReady() != true) { onToast("最初にCaptureを開始してください"); return }
-    workspace.project.scenes.firstOrNull { it.name.equals("WAIT", true) }?.let { onSceneRequest(it.id) }
-    onToast("3秒後にGAME + REC")
+    if (service?.isCaptureReady() != true) { onToast("最初に画面取り込みを開始してください"); return }
+    workspace.project.scenes.firstOrNull { (it.name.equals("WAIT", true) || it.name == "待機") }?.let { onSceneRequest(it.id) }
+    onToast("3秒後にゲーム画面へ切替＋録画開始")
     handler.postDelayed({
-      workspace.project.scenes.firstOrNull { it.name.equals("GAME", true) }?.let { onSceneRequest(it.id) }
+      workspace.project.scenes.firstOrNull { (it.name.equals("GAME", true) || it.name == "ゲーム") }?.let { onSceneRequest(it.id) }
       if (service.isRecordingNow() != true) service.toggleRecording()
       run("SMART")
     }, 3000)

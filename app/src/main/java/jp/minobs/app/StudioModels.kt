@@ -80,7 +80,7 @@ data class StudioSource(
             val filters = mutableListOf<StudioFilter>(); val a = o.optJSONArray("filters") ?: JSONArray()
             for (i in 0 until a.length()) filters += StudioFilter.fromJson(a.getJSONObject(i))
             return StudioSource(
-                o.optString("id", UUID.randomUUID().toString()), o.optString("name", "Source"),
+                o.optString("id", UUID.randomUUID().toString()), o.optString("name", "ソース"),
                 runCatching { StudioSourceType.valueOf(o.optString("type", "TEXT")) }.getOrDefault(StudioSourceType.TEXT),
                 o.optBoolean("visible", true), o.optBoolean("locked", false), o.optBoolean("global", false),
                 StudioTransform.fromJson(o.optJSONObject("transform") ?: JSONObject()), o.optString("data"), filters,
@@ -102,7 +102,7 @@ data class StudioScene(
         fun fromJson(o: JSONObject): StudioScene {
             val list = mutableListOf<StudioSource>(); val a = o.optJSONArray("sources") ?: JSONArray()
             for (i in 0 until a.length()) list += StudioSource.fromJson(a.getJSONObject(i))
-            return StudioScene(o.optString("id", UUID.randomUUID().toString()), o.optString("name", "Scene"), list)
+            return StudioScene(o.optString("id", UUID.randomUUID().toString()), o.optString("name", "シーン"), list)
         }
     }
 }
@@ -120,7 +120,7 @@ data class StudioMacro(
 }
 
 data class StudioProject(
-    var name: String = "Mini OBS Project",
+    var name: String = "Mini OBS プロジェクト",
     var canvasWidth: Int = 1920,
     var canvasHeight: Int = 1080,
     var outputWidth: Int = 1920,
@@ -152,9 +152,9 @@ data class StudioProject(
     }
     companion object {
         fun defaultProject(): StudioProject {
-            val game = StudioScene(name = "GAME", sources = mutableListOf(StudioSource(name = "Screen Capture", type = StudioSourceType.SCREEN, locked = true, transform = StudioTransform(0f, 0f, 100f, 100f))))
-            val talk = StudioScene(name = "TALK", sources = mutableListOf(StudioSource(name = "Screen Capture", type = StudioSourceType.SCREEN, locked = true, transform = StudioTransform(0f, 0f, 100f, 100f))))
-            val wait = StudioScene(name = "WAIT", sources = mutableListOf(StudioSource(name = "Starting Soon", type = StudioSourceType.TEXT, data = "まもなく開始", transform = StudioTransform(25f, 42f, 50f, 16f))))
+            val game = StudioScene(name = "ゲーム", sources = mutableListOf(StudioSource(name = "画面キャプチャ", type = StudioSourceType.SCREEN, locked = true, transform = StudioTransform(0f, 0f, 100f, 100f))))
+            val talk = StudioScene(name = "雑談", sources = mutableListOf(StudioSource(name = "画面キャプチャ", type = StudioSourceType.SCREEN, locked = true, transform = StudioTransform(0f, 0f, 100f, 100f))))
+            val wait = StudioScene(name = "待機", sources = mutableListOf(StudioSource(name = "まもなく開始", type = StudioSourceType.TEXT, data = "まもなく開始", transform = StudioTransform(25f, 42f, 50f, 16f))))
             return StudioProject(scenes = mutableListOf(game, talk, wait), programSceneId = game.id, previewSceneId = talk.id)
         }
         fun fromJson(o: JSONObject): StudioProject {
@@ -162,7 +162,7 @@ data class StudioProject(
             val globals = mutableListOf<StudioSource>(); val ga = o.optJSONArray("globalSources") ?: JSONArray(); for (i in 0 until ga.length()) globals += StudioSource.fromJson(ga.getJSONObject(i))
             val macros = mutableListOf<StudioMacro>(); val ma = o.optJSONArray("macros") ?: JSONArray(); for (i in 0 until ma.length()) macros += StudioMacro.fromJson(ma.getJSONObject(i))
             return StudioProject(
-                o.optString("name", "Mini OBS Project"), o.optInt("canvasWidth", 1920), o.optInt("canvasHeight", 1080), o.optInt("outputWidth", 1920), o.optInt("outputHeight", 1080),
+                o.optString("name", "Mini OBS プロジェクト"), o.optInt("canvasWidth", 1920), o.optInt("canvasHeight", 1080), o.optInt("outputWidth", 1920), o.optInt("outputHeight", 1080),
                 o.optInt("fps", 60), o.optInt("bitrate", 8_000_000), runCatching { StudioTransition.valueOf(o.optString("transition", "FADE")) }.getOrDefault(StudioTransition.FADE),
                 o.optInt("transitionMs", 300), o.optBoolean("studioMode", false), o.optBoolean("safeArea", true), runCatching { StudioPerformanceMode.valueOf(o.optString("performanceMode", "BALANCED")) }.getOrDefault(StudioPerformanceMode.BALANCED),
                 o.optInt("autoSplitMinutes", 60), o.optBoolean("backupRecord", false), scenes.ifEmpty { defaultProject().scenes }, globals, macros,

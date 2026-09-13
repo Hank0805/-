@@ -58,9 +58,9 @@ class StudioWorkspace(private val context: Context) {
 
   fun addScene(name: String): StudioScene {
     checkpoint()
-    val scene = StudioScene(name = name.ifBlank { "Scene ${project.scenes.size + 1}" })
+    val scene = StudioScene(name = name.ifBlank { "シーン ${project.scenes.size + 1}" })
     scene.sources += StudioSource(
-      name = "Screen Capture",
+      name = "画面キャプチャ",
       type = StudioSourceType.SCREEN,
       locked = true,
       transform = StudioTransform(0f, 0f, 100f, 100f)
@@ -117,7 +117,7 @@ class StudioWorkspace(private val context: Context) {
     val source = source(id) ?: return null
     checkpoint()
     val copy = source.deepCopy(true).also {
-      it.name += " Copy"
+      it.name += " のコピー"
       it.transform.x = (it.transform.x + 3f).coerceAtMost(92f)
       it.transform.y = (it.transform.y + 3f).coerceAtMost(92f)
     }

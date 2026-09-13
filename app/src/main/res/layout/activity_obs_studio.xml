@@ -5,19 +5,19 @@
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:background="#232428" android:paddingHorizontal="10dp">
       <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Mini OBS Studio" android:textColor="#F1F1F1" android:textSize="19sp" android:textStyle="bold" />
-      <TextView android:id="@+id/txtStudioStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="OFFLINE" android:textColor="#A9ABB0" android:textStyle="bold" android:padding="8dp" />
-      <Button android:id="@+id/btnClassic" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Classic" android:textAllCaps="false" />
+      <TextView android:id="@+id/txtStudioStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="停止中" android:textColor="#A9ABB0" android:textStyle="bold" android:padding="8dp" />
+      <Button android:id="@+id/btnClassic" android:layout_width="wrap_content" android:layout_height="40dp" android:text="クラシック" android:textAllCaps="false" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/studioPreviewRow" android:layout_width="match_parent" android:layout_height="230dp" android:orientation="horizontal" android:layout_marginTop="7dp">
       <FrameLayout android:id="@+id/previewFrame" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="#08090A">
         <ImageView android:id="@+id/imgPreviewScene" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitCenter" android:background="#050505" />
-        <TextView android:id="@+id/txtPreviewLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:background="#CC202226" android:text="PREVIEW" android:textColor="#71D58C" android:textStyle="bold" android:padding="6dp" />
+        <TextView android:id="@+id/txtPreviewLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:background="#CC202226" android:text="プレビュー" android:textColor="#71D58C" android:textStyle="bold" android:padding="6dp" />
       </FrameLayout>
       <FrameLayout android:id="@+id/programFrame" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginStart="4dp" android:background="#050505">
         <SurfaceView android:id="@+id/programSurface" android:layout_width="match_parent" android:layout_height="match_parent" android:keepScreenOn="true" />
         <jp.minobs.app.StudioTransformOverlay android:id="@+id/transformOverlay" android:layout_width="match_parent" android:layout_height="match_parent" />
-        <TextView android:id="@+id/txtProgramLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:background="#CC202226" android:text="PROGRAM" android:textColor="#FF5E6D" android:textStyle="bold" android:padding="6dp" />
+        <TextView android:id="@+id/txtProgramLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="top|start" android:background="#CC202226" android:text="本番" android:textColor="#FF5E6D" android:textStyle="bold" android:padding="6dp" />
       </FrameLayout>
     </LinearLayout>
 
@@ -25,12 +25,12 @@
       <Spinner android:id="@+id/spinnerTransition" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" />
       <SeekBar android:id="@+id/seekTransitionMs" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:max="1900" android:progress="200" />
       <TextView android:id="@+id/txtTransitionMs" android:layout_width="70dp" android:layout_height="wrap_content" android:text="300 ms" android:textColor="#D8D9DC" android:gravity="center" />
-      <Button android:id="@+id/btnTake" android:layout_width="100dp" android:layout_height="42dp" android:text="TAKE →" android:textAllCaps="false" />
+      <Button android:id="@+id/btnTake" android:layout_width="100dp" android:layout_height="42dp" android:text="反映 →" android:textAllCaps="false" />
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="7dp">
       <LinearLayout android:layout_width="0dp" android:layout_height="220dp" android:layout_weight="1" android:orientation="vertical" android:background="#202124" android:padding="6dp">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Scenes" android:textColor="#F0F0F0" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="シーン" android:textColor="#F0F0F0" android:textStyle="bold" />
         <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"><LinearLayout android:id="@+id/sceneList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" /></ScrollView>
         <LinearLayout android:layout_width="match_parent" android:layout_height="42dp" android:orientation="horizontal">
           <Button android:id="@+id/btnSceneAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="＋" />
@@ -40,7 +40,7 @@
       </LinearLayout>
 
       <LinearLayout android:layout_width="0dp" android:layout_height="220dp" android:layout_weight="1.5" android:orientation="vertical" android:background="#202124" android:padding="6dp" android:layout_marginStart="6dp">
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Sources" android:textColor="#F0F0F0" android:textStyle="bold" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ソース" android:textColor="#F0F0F0" android:textStyle="bold" />
         <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"><LinearLayout android:id="@+id/sourceList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" /></ScrollView>
         <LinearLayout android:layout_width="match_parent" android:layout_height="42dp" android:orientation="horizontal">
           <Button android:id="@+id/btnSourceAdd" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="＋" />
@@ -54,68 +54,68 @@
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#202124" android:padding="8dp" android:layout_marginTop="7dp">
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-        <TextView android:id="@+id/txtSelectedSource" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Source Properties — none" android:textColor="#F0F0F0" android:textStyle="bold" />
+        <TextView android:id="@+id/txtSelectedSource" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="ソースのプロパティ — 未選択" android:textColor="#F0F0F0" android:textStyle="bold" />
         <Button android:id="@+id/btnUndo" android:layout_width="58dp" android:layout_height="40dp" android:text="↶" />
         <Button android:id="@+id/btnRedo" android:layout_width="58dp" android:layout_height="40dp" android:text="↷" />
       </LinearLayout>
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Move / pinch / rotate directly on PROGRAM. Double tap = Fit to screen. Snap guides are automatic." android:textColor="#989BA2" android:textSize="11sp" />
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="本番画面で直接、移動・ピンチ拡大縮小・回転できます。ダブルタップで画面に合わせます。スナップガイドは自動です。" android:textColor="#989BA2" android:textSize="11sp" />
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
         <TextView android:id="@+id/txtTransformValues" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="X 0  Y 0  W 0  H 0  R 0°  A 100%" android:textColor="#C8CBD0" />
-        <Button android:id="@+id/btnCenterSource" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Center" android:textAllCaps="false" />
-        <Button android:id="@+id/btnFitSource" android:layout_width="wrap_content" android:layout_height="40dp" android:text="Fit" android:textAllCaps="false" />
+        <Button android:id="@+id/btnCenterSource" android:layout_width="wrap_content" android:layout_height="40dp" android:text="中央" android:textAllCaps="false" />
+        <Button android:id="@+id/btnFitSource" android:layout_width="wrap_content" android:layout_height="40dp" android:text="画面に合わせる" android:textAllCaps="false" />
       </LinearLayout>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Opacity" android:textColor="#B8BAC0" />
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="不透明度" android:textColor="#B8BAC0" />
       <SeekBar android:id="@+id/seekOpacity" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="100" />
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/btnVisibility" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="👁 Visible" android:textAllCaps="false" />
-        <Button android:id="@+id/btnLock" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="🔓 Unlock" android:textAllCaps="false" />
-        <Button android:id="@+id/btnGlobal" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Global" android:textAllCaps="false" />
-        <Button android:id="@+id/btnFilters" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Filters" android:textAllCaps="false" />
-        <Button android:id="@+id/btnPreset" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Preset" android:textAllCaps="false" />
+        <Button android:id="@+id/btnVisibility" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="👁 表示" android:textAllCaps="false" />
+        <Button android:id="@+id/btnLock" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="🔓 ロック解除" android:textAllCaps="false" />
+        <Button android:id="@+id/btnGlobal" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="グローバル" android:textAllCaps="false" />
+        <Button android:id="@+id/btnFilters" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="フィルター" android:textAllCaps="false" />
+        <Button android:id="@+id/btnPreset" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="プリセット" android:textAllCaps="false" />
       </LinearLayout>
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#202124" android:padding="8dp" android:layout_marginTop="7dp">
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Audio Mixer" android:textColor="#F0F0F0" android:textStyle="bold" />
-      <TextView android:id="@+id/txtMicMixer" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="MIC  100%" android:textColor="#D8D9DC" />
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="音声ミキサー" android:textColor="#F0F0F0" android:textStyle="bold" />
+      <TextView android:id="@+id/txtMicMixer" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="マイク  100%" android:textColor="#D8D9DC" />
       <ProgressBar android:id="@+id/meterMic" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="8dp" android:max="100" android:progress="55" />
       <SeekBar android:id="@+id/seekMic" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="200" android:progress="100" />
-      <TextView android:id="@+id/txtGameMixer" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="GAME  100%" android:textColor="#D8D9DC" />
+      <TextView android:id="@+id/txtGameMixer" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="内部音声  100%" android:textColor="#D8D9DC" />
       <ProgressBar android:id="@+id/meterGame" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="8dp" android:max="100" android:progress="62" />
       <SeekBar android:id="@+id/seekGame" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="200" android:progress="100" />
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/btnMicMute" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="MIC Mute" android:textAllCaps="false" />
-        <Button android:id="@+id/btnAudioRouting" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Routing / Tracks" android:textAllCaps="false" />
-        <Button android:id="@+id/btnAudioFilters" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Audio Filters" android:textAllCaps="false" />
+        <Button android:id="@+id/btnMicMute" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="マイク ミュート" android:textAllCaps="false" />
+        <Button android:id="@+id/btnAudioRouting" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="ルーティング / トラック" android:textAllCaps="false" />
+        <Button android:id="@+id/btnAudioFilters" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="音声フィルター" android:textAllCaps="false" />
       </LinearLayout>
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#202124" android:padding="8dp" android:layout_marginTop="7dp">
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Controls" android:textColor="#F0F0F0" android:textStyle="bold" />
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="操作" android:textColor="#F0F0F0" android:textStyle="bold" />
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/btnCapture" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="Start Capture" android:textAllCaps="false" />
-        <Button android:id="@+id/btnStream" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="Start Streaming" android:textAllCaps="false" />
-        <Button android:id="@+id/btnRecord" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="Start Recording" android:textAllCaps="false" />
+        <Button android:id="@+id/btnCapture" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="画面取り込み開始" android:textAllCaps="false" />
+        <Button android:id="@+id/btnStream" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="配信開始" android:textAllCaps="false" />
+        <Button android:id="@+id/btnRecord" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="録画開始" android:textAllCaps="false" />
       </LinearLayout>
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/btnReplay" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="Replay" android:textAllCaps="false" />
-        <Button android:id="@+id/btnScreenshot" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="Screenshot" android:textAllCaps="false" />
-        <Button android:id="@+id/btnSmart" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="Smart Action" android:textAllCaps="false" />
-        <Button android:id="@+id/btnRemote" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="Remote" android:textAllCaps="false" />
-        <Button android:id="@+id/btnPanic" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="PANIC" android:textAllCaps="false" />
+        <Button android:id="@+id/btnReplay" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="リプレイ" android:textAllCaps="false" />
+        <Button android:id="@+id/btnScreenshot" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="スクリーンショット" android:textAllCaps="false" />
+        <Button android:id="@+id/btnSmart" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="スマート操作" android:textAllCaps="false" />
+        <Button android:id="@+id/btnRemote" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="リモート" android:textAllCaps="false" />
+        <Button android:id="@+id/btnPanic" android:layout_width="0dp" android:layout_height="44dp" android:layout_weight="1" android:text="緊急" android:textAllCaps="false" />
       </LinearLayout>
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#202124" android:padding="8dp" android:layout_marginTop="7dp">
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tools / Automation / Project" android:textColor="#F0F0F0" android:textStyle="bold" />
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ツール / 自動化 / プロジェクト" android:textColor="#F0F0F0" android:textStyle="bold" />
       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-        <Button android:id="@+id/btnPreflight" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Preflight" android:textAllCaps="false" />
-        <Button android:id="@+id/btnMacros" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Macros" android:textAllCaps="false" />
-        <Button android:id="@+id/btnProject" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Project" android:textAllCaps="false" />
-        <Button android:id="@+id/btnOutput" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Output" android:textAllCaps="false" />
-        <Button android:id="@+id/btnPerformance" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="Performance" android:textAllCaps="false" />
+        <Button android:id="@+id/btnPreflight" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="配信前チェック" android:textAllCaps="false" />
+        <Button android:id="@+id/btnMacros" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="マクロ" android:textAllCaps="false" />
+        <Button android:id="@+id/btnProject" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="プロジェクト" android:textAllCaps="false" />
+        <Button android:id="@+id/btnOutput" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="出力設定" android:textAllCaps="false" />
+        <Button android:id="@+id/btnPerformance" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:text="パフォーマンス" android:textAllCaps="false" />
       </LinearLayout>
-      <TextView android:id="@+id/txtHealth" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="FPS -- | Bitrate -- | Dropped -- | Temp -- | Storage --" android:textColor="#9DA0A7" android:textSize="11sp" android:paddingTop="5dp" />
+      <TextView android:id="@+id/txtHealth" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="FPS -- | ビットレート -- | ドロップ -- | 温度 -- | 空き容量 --" android:textColor="#9DA0A7" android:textSize="11sp" android:paddingTop="5dp" />
     </LinearLayout>
 
   </LinearLayout>

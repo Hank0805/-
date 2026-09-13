@@ -112,7 +112,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
         refreshAll()
       }, 350)
     } else {
-      toast("Capture start failed")
+      toast("画面取り込みを開始できませんでした")
     }
   }
 
@@ -167,8 +167,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     if (uri == null) return@registerForActivityResult
     runCatching {
       contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { it.write(workspace.exportJson()) }
-    }.onSuccess { toast("Project exported") }
-      .onFailure { toast("Export failed") }
+    }.onSuccess { toast("プロジェクトを書き出しました") }
+      .onFailure { toast("書き出しに失敗しました") }
   }
 
   private val importLauncher = registerForActivityResult(
@@ -181,8 +181,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       workspace.importJson(it)
       refreshAll()
       rebuildProgram()
-      toast("Project imported")
-    }.onFailure { toast("Import failed") }
+      toast("プロジェクトを読み込みました")
+    }.onFailure { toast("読み込みに失敗しました") }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -234,7 +234,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     binding.spinnerTransition.adapter = ArrayAdapter(
       this,
       android.R.layout.simple_spinner_dropdown_item,
-      StudioTransition.entries.map { it.name }
+      StudioTransition.entries.map { transitionLabel(it) }
     )
     binding.spinnerTransition.setSelection(
       StudioTransition.entries.indexOf(workspace.project.transition).coerceAtLeast(0)
@@ -264,17 +264,17 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       refreshControls()
     }
     binding.btnStream.setOnClickListener { toggleStream() }
-    binding.btnReplay.setOnClickListener { toast("Replay clips: ${service?.saveReplay() ?: 0}") }
+    binding.btnReplay.setOnClickListener { toast("リプレイを保存しました: ${service?.saveReplay() ?: 0}") }
     binding.btnPanic.setOnClickListener { service?.togglePrivacy(); refreshControls() }
     binding.btnRemote.setOnClickListener {
-      toast(service?.startRemoteStudio() ?: "Start Capture first")
+      toast(service?.startRemoteStudio() ?: "先に画面取り込みを開始してください")
     }
     binding.btnSmart.setOnClickListener { automation.smartAction() }
     binding.btnScreenshot.setOnClickListener { saveScreenshot() }
     binding.btnTake.setOnClickListener { takePreviewToProgram() }
 
     binding.btnSceneAdd.setOnClickListener {
-      dialogs.text("Scene name") { workspace.addScene(it); refreshAll() }
+      dialogs.text("シーン名") { workspace.addScene(it); refreshAll() }
     }
     binding.btnSceneDup.setOnClickListener {
       workspace.duplicateScene(workspace.selectedSceneId)
@@ -353,17 +353,17 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     binding.seekMic.setOnSeekBarChangeListener(seek { progress ->
       micVolume = progress / 100f
       service?.setAudioVolumes(micVolume, gameVolume)
-      binding.txtMicMixer.text = "MIC  $progress%"
+      binding.txtMicMixer.text = "マイク  $progress%"
     })
     binding.seekGame.setOnSeekBarChangeListener(seek { progress ->
       gameVolume = progress / 100f
       service?.setAudioVolumes(micVolume, gameVolume)
-      binding.txtGameMixer.text = "GAME  $progress%"
+      binding.txtGameMixer.text = "内部音声  $progress%"
     })
     binding.btnMicMute.setOnClickListener {
       micMuted = !micMuted
       service?.setMicrophoneMuted(micMuted)
-      binding.btnMicMute.text = if (micMuted) "MIC Unmute" else "MIC Mute"
+      binding.btnMicMute.text = if (micMuted) "マイク ミュート解除" else "マイク ミュート"
     }
     binding.btnAudioRouting.setOnClickListener { showAudioRouting() }
     binding.btnAudioFilters.setOnClickListener { showAudioFilters() }
@@ -385,59 +385,59 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun showAddSource() {
     val labels = arrayOf(
-      "Text", "Image", "Camera", "Browser", "Media / Video", "Slideshow",
-      "Clock", "Timer", "Remote Camera", "Chat Overlay", "Title Card"
+      "テキスト", "画像", "カメラ", "ブラウザ", "メディア / 動画", "スライドショー",
+      "時計", "タイマー", "リモートカメラ", "チャット表示", "タイトルカード"
     )
-    AlertDialog.Builder(this).setTitle("Add Source").setItems(labels) { _, index ->
+    AlertDialog.Builder(this).setTitle("ソースを追加").setItems(labels) { _, index ->
       when (index) {
-        0 -> dialogs.text("Text") {
-          workspace.addSource(StudioSourceType.TEXT, "Text", it); refreshSources(); rebuildProgram()
+        0 -> dialogs.text("テキスト") {
+          workspace.addSource(StudioSourceType.TEXT, "テキスト", it); refreshSources(); rebuildProgram()
         }
         1 -> {
-          val source = workspace.addSource(StudioSourceType.IMAGE, "Image")
+          val source = workspace.addSource(StudioSourceType.IMAGE, "画像")
           pendingImageId = source.id
           imageLauncher.launch(arrayOf("image/*"))
           refreshSources()
         }
         2 -> {
-          workspace.addSource(StudioSourceType.CAMERA, "Camera")
+          workspace.addSource(StudioSourceType.CAMERA, "カメラ")
           requestCamera()
           refreshSources(); rebuildProgram()
         }
-        3 -> dialogs.text("Browser URL") {
-          val source = workspace.addSource(StudioSourceType.BROWSER, "Browser", it)
+        3 -> dialogs.text("ブラウザURL") {
+          val source = workspace.addSource(StudioSourceType.BROWSER, "ブラウザ", it)
           refreshSources(); dynamic.startBrowser(source)
         }
         4 -> {
-          val source = workspace.addSource(StudioSourceType.MEDIA, "Media")
+          val source = workspace.addSource(StudioSourceType.MEDIA, "メディア")
           pendingMediaId = source.id
           mediaLauncher.launch(arrayOf("video/*", "audio/*"))
           refreshSources()
         }
         5 -> {
-          val source = workspace.addSource(StudioSourceType.SLIDESHOW, "Slideshow")
+          val source = workspace.addSource(StudioSourceType.SLIDESHOW, "スライドショー")
           pendingSlideId = source.id
           slidesLauncher.launch(arrayOf("image/*"))
           refreshSources()
         }
         6 -> {
-          workspace.addSource(StudioSourceType.CLOCK, "Clock", "HH:mm:ss")
+          workspace.addSource(StudioSourceType.CLOCK, "時計", "HH:mm:ss")
           refreshSources(); rebuildProgram()
         }
         7 -> {
-          workspace.addSource(StudioSourceType.TIMER, "Timer", "${System.currentTimeMillis()}|0")
+          workspace.addSource(StudioSourceType.TIMER, "タイマー", "${System.currentTimeMillis()}|0")
           refreshSources(); rebuildProgram()
         }
         8 -> {
-          workspace.addSource(StudioSourceType.EXTERNAL, "Remote Camera", "remote:1")
-          refreshSources(); toast("Use Camera Node / Remote Studio")
+          workspace.addSource(StudioSourceType.EXTERNAL, "リモートカメラ", "remote:1")
+          refreshSources(); toast("カメラノード / リモートスタジオから接続してください")
         }
         9 -> {
-          workspace.addSource(StudioSourceType.CHAT, "Chat", "Chat Overlay")
+          workspace.addSource(StudioSourceType.CHAT, "チャット", "チャット表示")
           refreshSources(); rebuildProgram()
         }
-        10 -> dialogs.text("Title") {
-          val source = workspace.addSource(StudioSourceType.TEXT, "Title Card", it)
+        10 -> dialogs.text("タイトル") {
+          val source = workspace.addSource(StudioSourceType.TEXT, "タイトルカード", it)
           source.transform = StudioTransform(12f, 38f, 76f, 20f)
           refreshSources(); rebuildProgram()
         }
@@ -523,13 +523,13 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun refreshProperties() {
     val source = workspace.source()
-    binding.txtSelectedSource.text = "Source Properties — ${source?.name ?: "none"}"
+    binding.txtSelectedSource.text = "ソースのプロパティ — ${source?.name ?: "未選択"}"
     binding.transformOverlay.select(source)
     binding.seekOpacity.progress = ((source?.transform?.alpha ?: 1f) * 100).toInt()
-    binding.btnVisibility.text = if (source?.visible != false) "👁 Visible" else "○ Hidden"
-    binding.btnLock.text = if (source?.locked == true) "🔒 Locked" else "🔓 Unlock"
-    binding.btnGlobal.text = if (source?.global == true) "Scene Source" else "Global"
-    if (source != null) updateTransformText(source) else binding.txtTransformValues.text = "No source selected"
+    binding.btnVisibility.text = if (source?.visible != false) "👁 表示" else "○ 非表示"
+    binding.btnLock.text = if (source?.locked == true) "🔒 ロック中" else "🔓 ロック解除"
+    binding.btnGlobal.text = if (source?.global == true) "シーンソース" else "グローバル"
+    if (source != null) updateTransformText(source) else binding.txtTransformValues.text = "ソースが選択されていません"
   }
 
   private fun updateTransformText(source: StudioSource) {
@@ -631,16 +631,16 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
         canvas.drawText(source.name, rect.left + 3, rect.top + 20, textPaint)
       }
     binding.imgPreviewScene.setImageBitmap(bitmap)
-    binding.txtPreviewLabel.text = "PREVIEW — ${scene.name}"
+    binding.txtPreviewLabel.text = "プレビュー — ${scene.name}"
   }
 
   private fun showSourceMenu(source: StudioSource) {
-    val items = arrayOf("Rename", "Duplicate", "Save preset", "Toggle global", "Reset transform", "Remove")
+    val items = arrayOf("名前を変更", "複製", "プリセット保存", "グローバル切替", "変形をリセット", "削除")
     AlertDialog.Builder(this).setTitle(source.name).setItems(items) { _, index ->
       when (index) {
-        0 -> dialogs.text("Rename", source.name) { source.name = it; workspace.autosave(); refreshSources() }
+        0 -> dialogs.text("名前を変更", source.name) { source.name = it; workspace.autosave(); refreshSources() }
         1 -> { workspace.duplicateSource(source.id); refreshSources(); rebuildProgram() }
-        2 -> dialogs.text("Preset name", source.name) { workspace.savePreset(it, source); toast("Preset saved") }
+        2 -> dialogs.text("プリセット名", source.name) { workspace.savePreset(it, source); toast("プリセットを保存しました") }
         3 -> { workspace.toggleGlobal(source.id); refreshSources(); rebuildProgram() }
         4 -> {
           workspace.checkpoint(); source.transform = StudioTransform(); workspace.autosave()
@@ -653,8 +653,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun showFilters() {
     val source = workspace.source() ?: return
-    val items = arrayOf("Rotate +90°", "Opacity 100%", "Opacity 50%", "Fade in", "Slide in", "Add filter label")
-    AlertDialog.Builder(this).setTitle("Filters — ${source.name}").setItems(items) { _, index ->
+    val items = arrayOf("右へ90°回転", "不透明度 100%", "不透明度 50%", "フェードイン", "スライドイン", "フィルター名を追加")
+    AlertDialog.Builder(this).setTitle("フィルター — ${source.name}").setItems(items) { _, index ->
       workspace.checkpoint()
       when (index) {
         0 -> source.transform.rotation = (source.transform.rotation + 90) % 360
@@ -662,7 +662,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
         2 -> source.transform.alpha = .5f
         3 -> animateSource(source, true)
         4 -> animateSource(source, false)
-        5 -> dialogs.text("Filter name") { source.filters += StudioFilter(it); toast("Filter chain updated") }
+        5 -> dialogs.text("フィルター名") { source.filters += StudioFilter(it); toast("フィルターを更新しました") }
       }
       workspace.autosave(); renderer.updateTransform(source); refreshProperties()
     }.show()
@@ -691,8 +691,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private fun showPresets() {
     val selected = workspace.source()
     val names = workspace.presetNames()
-    val items = arrayListOf("Save current").apply { addAll(names) }
-    AlertDialog.Builder(this).setTitle("Presets").setItems(items.toTypedArray()) { _, index ->
+    val items = arrayListOf("現在の設定を保存").apply { addAll(names) }
+    AlertDialog.Builder(this).setTitle("プリセット").setItems(items.toTypedArray()) { _, index ->
       if (index == 0 && selected != null) {
         dialogs.text("Preset name", selected.name) { workspace.savePreset(it, selected) }
       } else if (index > 0) {
@@ -708,20 +708,20 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private fun showAudioRouting() {
     val source = workspace.source() ?: return
     val items = arrayOf(
-      "Stream output: ${source.streamAudio}",
-      "Record output: ${source.recordAudio}",
-      "Monitor: ${source.audioMonitor}",
-      "Track: ${source.audioTrack}",
-      "Delay: ${source.audioDelayMs}ms"
+      "配信へ出力: ${source.streamAudio}",
+      "録画へ出力: ${source.recordAudio}",
+      "モニター: ${source.audioMonitor}",
+      "トラック: ${source.audioTrack}",
+      "遅延: ${source.audioDelayMs}ms"
     )
-    AlertDialog.Builder(this).setTitle("Advanced Audio").setItems(items) { _, index ->
+    AlertDialog.Builder(this).setTitle("詳細オーディオ設定").setItems(items) { _, index ->
       workspace.checkpoint()
       when (index) {
         0 -> source.streamAudio = !source.streamAudio
         1 -> source.recordAudio = !source.recordAudio
         2 -> source.audioMonitor = !source.audioMonitor
         3 -> source.audioTrack = (source.audioTrack % 6) + 1
-        4 -> dialogs.text("Delay ms", source.audioDelayMs.toString()) {
+        4 -> dialogs.text("遅延 ms", source.audioDelayMs.toString()) {
           source.audioDelayMs = it.toIntOrNull() ?: 0
         }
       }
@@ -732,17 +732,18 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun showAudioFilters() {
     val presets = arrayOf("game", "voice", "broadcast", "flat")
-    AlertDialog.Builder(this).setTitle("Audio filters").setItems(presets) { _, index ->
+    val labels = arrayOf("ゲーム", "音声", "配信", "フラット")
+    AlertDialog.Builder(this).setTitle("オーディオフィルター").setItems(labels) { _, index ->
       service?.setAudioPreset(presets[index])
       toast(presets[index])
     }.show()
   }
 
   private fun showMacros() {
-    val items = arrayListOf("Add macro", "Run MANUAL").apply {
+    val items = arrayListOf("マクロを追加", "手動実行").apply {
       addAll(workspace.project.macros.map { (if (it.enabled) "✓ " else "○ ") + it.name })
     }
-    AlertDialog.Builder(this).setTitle("Macros").setItems(items.toTypedArray()) { _, index ->
+    AlertDialog.Builder(this).setTitle("マクロ").setItems(items.toTypedArray()) { _, index ->
       when {
         index == 0 -> addMacro()
         index == 1 -> automation.run("MANUAL")
@@ -757,11 +758,11 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   }
 
   private fun addMacro() {
-    dialogs.text("Macro: trigger,action", "MANUAL,replay") { value ->
+    dialogs.text("マクロ: トリガー,アクション", "MANUAL,replay") { value ->
       val parts = value.split(',', limit = 2)
       if (parts.size == 2) {
         workspace.project.macros += StudioMacro(
-          name = "Macro ${workspace.project.macros.size + 1}",
+          name = "マクロ ${workspace.project.macros.size + 1}",
           trigger = parts[0].trim().uppercase(),
           action = parts[1].trim()
         )
@@ -773,12 +774,12 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   fun runMacros(trigger: String) = automation.run(trigger)
 
   private fun showProjectMenu() {
-    val items = arrayOf("Export project", "Import project", "Autosave", "Reset", "Toggle Safe Area", "Toggle Studio Mode")
-    AlertDialog.Builder(this).setTitle("Project").setItems(items) { _, index ->
+    val items = arrayOf("プロジェクトを書き出す", "プロジェクトを読み込む", "自動保存", "リセット", "セーフエリア切替", "スタジオモード切替")
+    AlertDialog.Builder(this).setTitle("プロジェクト").setItems(items) { _, index ->
       when (index) {
         0 -> exportLauncher.launch("MiniOBS_Project.json")
         1 -> importLauncher.launch(arrayOf("application/json", "text/plain"))
-        2 -> { workspace.autosave(); toast("Autosaved") }
+        2 -> { workspace.autosave(); toast("自動保存しました") }
         3 -> { workspace.reset(); refreshAll(); rebuildProgram() }
         4 -> {
           workspace.project.safeArea = !workspace.project.safeArea
@@ -788,7 +789,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
         5 -> {
           workspace.project.studioMode = !workspace.project.studioMode
           workspace.autosave()
-          toast("Studio Mode ${workspace.project.studioMode}")
+          toast("スタジオモード: ${if (workspace.project.studioMode) "ON" else "OFF"}")
         }
       }
     }.show()
@@ -797,7 +798,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private fun showOutput() {
     val p = workspace.project
     dialogs.text(
-      "Output WxH FPS kbps",
+      "出力設定  幅x高さ FPS kbps",
       "${p.outputWidth}x${p.outputHeight} ${p.fps} ${p.bitrate / 1000}"
     ) { value ->
       val parts = value.replace('x', ' ').split(' ').filter { it.isNotBlank() }
@@ -814,14 +815,14 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   }
 
   private fun showEndpointDialog() {
-    dialogs.text("RTMP URLs separated by |", getEndpoints().joinToString("|")) {
+    dialogs.text("RTMP URL（複数は | で区切る）", getEndpoints().joinToString("|")) {
       saveEndpoints(it.split('|'))
     }
   }
 
   private fun showPerformance() {
-    val names = StudioPerformanceMode.entries.map { it.name }.toTypedArray()
-    AlertDialog.Builder(this).setTitle("Performance").setItems(names) { _, index ->
+    val names = StudioPerformanceMode.entries.map { performanceLabel(it) }.toTypedArray()
+    AlertDialog.Builder(this).setTitle("パフォーマンス").setItems(names) { _, index ->
       workspace.project.performanceMode = StudioPerformanceMode.entries[index]
       if (workspace.project.performanceMode == StudioPerformanceMode.BATTERY) {
         workspace.project.fps = 30
@@ -834,13 +835,13 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private fun showPreflight() {
     val endpoints = getEndpoints()
     val lines = listOf(
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) "✓ Audio permission" else "✕ Audio permission",
-      if (service?.isCaptureReady() == true) "✓ Capture ready" else "! Capture stopped",
-      if (endpoints.isNotEmpty()) "✓ ${endpoints.size} stream destination(s)" else "! No RTMP destination",
-      "✓ Project autosave enabled",
-      "✓ Free storage ${filesDir.freeSpace / 1024 / 1024} MB"
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) "✓ 音声権限 OK" else "✕ 音声権限なし",
+      if (service?.isCaptureReady() == true) "✓ 画面取り込み準備完了" else "! 画面取り込み停止中",
+      if (endpoints.isNotEmpty()) "✓ 配信先 ${endpoints.size}件" else "! RTMP配信先が未設定",
+      "✓ プロジェクト自動保存 ON",
+      "✓ 空き容量 ${filesDir.freeSpace / 1024 / 1024} MB"
     )
-    AlertDialog.Builder(this).setTitle("Preflight").setMessage(lines.joinToString("\n")).setPositiveButton("OK", null).show()
+    AlertDialog.Builder(this).setTitle("配信前チェック").setMessage(lines.joinToString("\n")).setPositiveButton("OK", null).show()
   }
 
   private fun toggleStream() {
@@ -849,7 +850,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       s.stopRtmp()
     } else {
       val endpoints = getEndpoints()
-      if (endpoints.isEmpty()) { toast("OutputでRTMP URLを設定してください"); return }
+      if (endpoints.isEmpty()) { toast("出力設定でRTMP URLを設定してください"); return }
       s.startMultiRtmp(endpoints)
     }
     automation.run("STREAM_TOGGLE")
@@ -911,15 +912,15 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     val ready = service?.isCaptureReady() == true
     val live = service?.isStreamingNow() == true
     val recording = service?.isRecordingNow() == true
-    binding.btnCapture.text = if (ready) "Stop Capture" else "Start Capture"
-    binding.btnStream.text = if (live) "Stop Streaming" else "Start Streaming"
-    binding.btnRecord.text = if (recording) "Stop Recording" else "Start Recording"
+    binding.btnCapture.text = if (ready) "画面取り込み停止" else "画面取り込み開始"
+    binding.btnStream.text = if (live) "配信停止" else "配信開始"
+    binding.btnRecord.text = if (recording) "録画停止" else "録画開始"
     binding.txtStudioStatus.text = when {
-      service?.isPrivacyMode() == true -> "PRIVACY"
-      live -> "LIVE"
-      recording -> "REC"
-      ready -> "READY"
-      else -> "OFFLINE"
+      service?.isPrivacyMode() == true -> "プライバシー"
+      live -> "配信中"
+      recording -> "録画中"
+      ready -> "準備完了"
+      else -> "停止中"
     }
     binding.txtStudioStatus.setTextColor(
       when {
@@ -944,8 +945,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       service?.remoteStatus()?.let { status ->
         binding.txtHealth.text =
           "${status.optString("resolution")} ${status.optInt("fps")}fps | " +
-            "${status.optLong("bitrateKbps")}kbps | Drop ${status.optLong("droppedVideo")}/${status.optLong("droppedAudio")} | " +
-            "${status.optDouble("temperature")}℃ | Battery ${status.optInt("battery")}% | Free ${status.optLong("storageFreeMb")}MB"
+            "${status.optLong("bitrateKbps")}kbps | ドロップ ${status.optLong("droppedVideo")}/${status.optLong("droppedAudio")} | " +
+            "${status.optDouble("temperature")}℃ | バッテリー ${status.optInt("battery")}% | 空き ${status.optLong("storageFreeMb")}MB"
         if (status.optInt("battery") in 1..14) automation.run("LOW_BATTERY")
       }
     }
@@ -985,7 +986,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun saveScreenshot() {
     val jpeg = service?.remotePreviewJpeg()
-    if (jpeg == null) { toast("Start Capture first"); return }
+    if (jpeg == null) { toast("先に画面取り込みを開始してください"); return }
     runCatching {
       val name = "MiniOBS_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.jpg"
       val values = ContentValues().apply {
@@ -995,8 +996,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       }
       val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: error("insert")
       contentResolver.openOutputStream(uri)?.use { it.write(jpeg) }
-    }.onSuccess { toast("Screenshot saved") }
-      .onFailure { toast("Screenshot failed") }
+    }.onSuccess { toast("スクリーンショットを保存しました") }
+      .onFailure { toast("スクリーンショットの保存に失敗しました") }
   }
 
   private fun persistReadPermission(uri: Uri) {
@@ -1019,6 +1020,21 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long
     ) = onSelected(position)
     override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
+  }
+
+  private fun transitionLabel(value: StudioTransition): String = when (value) {
+    StudioTransition.CUT -> "カット"
+    StudioTransition.FADE -> "フェード"
+    StudioTransition.SLIDE -> "スライド"
+    StudioTransition.ZOOM -> "ズーム"
+    StudioTransition.WIPE -> "ワイプ"
+    StudioTransition.STINGER -> "スティンガー"
+  }
+
+  private fun performanceLabel(value: StudioPerformanceMode): String = when (value) {
+    StudioPerformanceMode.QUALITY -> "高画質"
+    StudioPerformanceMode.BALANCED -> "バランス"
+    StudioPerformanceMode.BATTERY -> "省電力"
   }
 
   private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
