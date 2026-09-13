@@ -1,12 +1,568 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg" android:fillViewport="true">
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp">
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal"><LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mini OBS" android:textColor="@color/text" android:textSize="24sp" android:textStyle="bold"/><TextView android:id="@+id/txtStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="待機中" android:textColor="@color/muted" android:textSize="13sp"/></LinearLayout><TextView android:id="@+id/txtLive" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/panel_bg" android:paddingHorizontal="12dp" android:paddingVertical="7dp" android:text="OFFLINE" android:textColor="@color/muted" android:textStyle="bold"/></LinearLayout>
-<FrameLayout android:id="@+id/previewContainer" android:layout_width="match_parent" android:layout_height="220dp" android:layout_marginTop="14dp" android:background="@drawable/preview_bg"><SurfaceView android:id="@+id/previewSurface" android:layout_width="match_parent" android:layout_height="match_parent" android:keepScreenOn="true"/><FrameLayout android:id="@+id/editOverlay" android:layout_width="match_parent" android:layout_height="match_parent" android:clickable="true" android:focusable="true"><TextView android:id="@+id/txtPreviewHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:background="#99000000" android:gravity="center" android:padding="8dp" android:text="「画面共有を開始」でLIVEプレビューを表示" android:textColor="@android:color/white" android:textSize="12sp"/></FrameLayout></FrameLayout>
-<Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="12dp" android:text="画面共有を開始" android:textAllCaps="false"/>
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="12dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="シーン" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold"/><RadioGroup android:id="@+id/sceneGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"><RadioButton android:id="@+id/sceneGame" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="ゲーム" android:textColor="@color/text"/><RadioButton android:id="@+id/sceneTalk" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:text="雑談" android:textColor="@color/text"/><RadioButton android:id="@+id/sceneWait" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:text="待機" android:textColor="@color/text"/></RadioGroup></LinearLayout>
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="12dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ソース" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold"/><TextView android:id="@+id/txtSelectedSource" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="選択中: なし" android:textColor="@color/muted" android:textSize="12sp"/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"><Button android:id="@+id/btnAddText" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="文字" android:textAllCaps="false"/><Button android:id="@+id/btnAddImage" android:layout_width="0dp" android:layout_height="48dp" android:layout_marginStart="6dp" android:layout_weight="1" android:text="画像" android:textAllCaps="false"/><Button android:id="@+id/btnCamera" android:layout_width="0dp" android:layout_height="48dp" android:layout_marginStart="6dp" android:layout_weight="1" android:text="カメラ" android:textAllCaps="false"/></LinearLayout><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="選択ソースのサイズ" android:textColor="@color/text"/><SeekBar android:id="@+id/seekSourceScale" android:layout_width="match_parent" android:layout_height="wrap_content"/><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="プレビュー上を指でドラッグすると選択中ソースを移動できます" android:textColor="@color/muted" android:textSize="11sp"/></LinearLayout>
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="12dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="音声ミキサー" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold"/><TextView android:id="@+id/txtMicLevel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="マイク 100%" android:textColor="@color/text"/><SeekBar android:id="@+id/seekMic" android:layout_width="match_parent" android:layout_height="wrap_content"/><TextView android:id="@+id/txtInternalLevel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="内部音声 100%" android:textColor="@color/text"/><SeekBar android:id="@+id/seekInternal" android:layout_width="match_parent" android:layout_height="wrap_content"/><Button android:id="@+id/btnMicMute" android:layout_width="match_parent" android:layout_height="46dp" android:text="マイクミュート" android:textAllCaps="false"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="音声ソース" android:textColor="@color/text" android:textStyle="bold"/><Spinner android:id="@+id/spinnerAudio" android:layout_width="match_parent" android:layout_height="48dp"/></LinearLayout>
-<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="12dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="映像・配信" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold"/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"><Spinner android:id="@+id/spinnerResolution" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"/><Spinner android:id="@+id/spinnerFps" android:layout_width="0dp" android:layout_height="48dp" android:layout_marginStart="8dp" android:layout_weight="1"/></LinearLayout><EditText android:id="@+id/editRtmp" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="rtmp://server/app/stream-key" android:inputType="textUri" android:singleLine="true" android:textColor="@color/text" android:textColorHint="@color/muted"/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"><Button android:id="@+id/btnRecord" android:layout_width="0dp" android:layout_height="50dp" android:layout_weight="1" android:enabled="false" android:text="録画開始" android:textAllCaps="false"/><Button android:id="@+id/btnStream" android:layout_width="0dp" android:layout_height="50dp" android:layout_marginStart="8dp" android:layout_weight="1" android:enabled="false" android:text="配信開始" android:textAllCaps="false"/></LinearLayout><Button android:id="@+id/btnFloating" android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp" android:enabled="false" android:text="ゲーム上に操作パネルを表示" android:textAllCaps="false"/><TextView android:id="@+id/txtBitrate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="送信: 0 kbps" android:textColor="@color/muted" android:textSize="13sp"/></LinearLayout>
-<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:paddingBottom="18dp" android:text="v0.2 — LIVEプレビュー / シーン / 文字・画像・カメラソース / ドラッグ配置 / 音声ミキサー / フローティング操作 / ギャラリー保存" android:textColor="@color/muted" android:textSize="12sp"/>
-</LinearLayout></ScrollView>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mini OBS Studio Pro"
+                    android:textColor="@color/text"
+                    android:textSize="23sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/txtStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="待機中"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/txtLive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/panel_bg"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="7dp"
+                android:text="OFFLINE"
+                android:textColor="@color/muted"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/previewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/preview_bg">
+            <SurfaceView
+                android:id="@+id/previewSurface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:keepScreenOn="true" />
+            <FrameLayout
+                android:id="@+id/editOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:id="@+id/txtPreviewHint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="#99000000"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:text="「画面共有を開始」でLIVEプレビューを表示"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/btnCapture"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:text="画面共有を開始"
+            android:textAllCaps="false" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="プロファイル"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <Spinner
+                android:id="@+id/spinnerProfile"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnApplyProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="適用"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnSaveProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:text="現在設定を保存"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="シーン"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <RadioGroup
+                android:id="@+id/sceneGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/sceneGame"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="ゲーム"
+                    android:textColor="@color/text" />
+                <RadioButton
+                    android:id="@+id/sceneTalk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="雑談"
+                    android:textColor="@color/text" />
+                <RadioButton
+                    android:id="@+id/sceneWait"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="待機"
+                    android:textColor="@color/text" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ソース"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtSelectedSource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="選択中: なし"
+                android:textColor="@color/muted"
+                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnAddText"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="文字"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnAddImage"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:text="画像"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnCamera"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:text="カメラ"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="選択ソースのサイズ / プレビューをドラッグして移動"
+                android:textColor="@color/muted"
+                android:textSize="11sp" />
+            <SeekBar
+                android:id="@+id/seekSourceScale"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音声ミキサー / フィルター"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtMicLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="マイク 100%"
+                android:textColor="@color/text" />
+            <SeekBar
+                android:id="@+id/seekMic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/txtInternalLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="内部音声 100%"
+                android:textColor="@color/text" />
+            <SeekBar
+                android:id="@+id/seekInternal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnMicMute"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="マイクミュート"
+                    android:textAllCaps="false" />
+                <Spinner
+                    android:id="@+id/spinnerAudioPreset"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="入力音声"
+                android:textColor="@color/muted" />
+            <Spinner
+                android:id="@+id/spinnerAudio"
+                android:layout_width="match_parent"
+                android:layout_height="46dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="映像 / マルチ配信"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Spinner
+                    android:id="@+id/spinnerResolution"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1" />
+                <Spinner
+                    android:id="@+id/spinnerFps"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+            <EditText
+                android:id="@+id/editRtmp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="配信先1: rtmp(s)://..."
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted" />
+            <EditText
+                android:id="@+id/editRtmp2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="配信先2（任意）"
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted" />
+            <EditText
+                android:id="@+id/editRtmp3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="配信先3（任意）"
+                android:inputType="textUri"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnRecord"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:enabled="false"
+                    android:text="録画開始"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnStream"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:enabled="false"
+                    android:text="配信開始"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/txtBitrate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="送信: 0 kbps"
+                android:textColor="@color/muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Replay / 安全操作"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnReplayToggle"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="Replay ON"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnReplay"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:text="直前を保存"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnMarker"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1"
+                    android:text="★ MARK"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnPrivacy"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="PANIC / 緊急非表示"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnFloating"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:enabled="false"
+                    android:text="フローティング操作"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dual Phone Studio"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtRemote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="画面共有後に同じWi-Fiの2台目から接続できます"
+                android:textColor="@color/muted"
+                android:textIsSelectable="true"
+                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnRemote"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="Remote URL表示"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnCameraNode"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:text="この端末を外部カメラに"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="自動化 / チャット"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnAutoScene"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:text="自動シーン ON"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btnUsageAccess"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:text="使用状況アクセス"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+            <Button
+                android:id="@+id/btnChat"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:text="YouTube / Twitch チャット設定"
+                android:textAllCaps="false" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/panel_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Studio Health"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtHealth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CPU / 温度 / 回線 / Dropped Frames をここに表示"
+                android:textColor="@color/muted"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingBottom="20dp"
+            android:text="v0.4 — Dual Phone Studio / Replay / Multi RTMP / Auto Scene / Chat / Privacy / External Cameras / Audio FX\n※ DRM保護コンテンツや他アプリ側で録音禁止の音声は取得できません。"
+            android:textColor="@color/muted"
+            android:textSize="11sp" />
+    </LinearLayout>
+</ScrollView>
