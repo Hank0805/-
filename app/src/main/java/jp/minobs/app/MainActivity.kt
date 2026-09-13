@@ -378,7 +378,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
         }
         binding.btnReplay.setOnClickListener {
             val count = captureService?.saveReplay() ?: 0
-            if (count == 0) toast("保存できるReplayがまだありません") else toast("直前を$countクリップ保存しました")
+            if (count == 0) toast("保存できるReplayがまだありません") else toast("直前を${count}クリップ保存しました")
         }
         binding.btnMarker.setOnClickListener { captureService?.addMarker(); toast("★ マーカーを追加") }
         binding.btnPrivacy.setOnClickListener {
