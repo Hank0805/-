@@ -1,2 +1,2 @@
-Trigger GitHub Actions build for Mini OBS v0.5.2
-Japanese UI + existing data migration
+Trigger GitHub Actions build for Mini OBS v0.5.3
+Separate stream server URL and stream key fields
