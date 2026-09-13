@@ -1,2 +1,2 @@
 Trigger GitHub Actions build for Mini OBS v0.6.0
-Verify integrated independent audio mixer, USB audio delay/monitoring, and thermal protection
+Verify real MP4 multitrack audio and encoded GL scene transitions
