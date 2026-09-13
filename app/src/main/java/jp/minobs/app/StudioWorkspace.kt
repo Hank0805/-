@@ -19,6 +19,36 @@ class StudioWorkspace(private val context: Context) {
   var selectedSceneId: String = project.programSceneId
   var selectedSourceId: String? = null
 
+  init {
+    migrateLegacyJapaneseLabels()
+    autosave()
+  }
+
+  private fun migrateLegacyJapaneseLabels() {
+    if (project.name == "Mini OBS Project") project.name = "Mini OBS プロジェクト"
+    val sceneNames = mapOf("GAME" to "ゲーム", "TALK" to "雑談", "WAIT" to "待機")
+    val sourceNames = mapOf(
+      "Screen Capture" to "画面キャプチャ",
+      "Starting Soon" to "まもなく開始",
+      "Text" to "テキスト",
+      "Image" to "画像",
+      "Camera" to "カメラ",
+      "Browser" to "ブラウザ",
+      "Media" to "メディア",
+      "Slideshow" to "スライドショー",
+      "Clock" to "時計",
+      "Timer" to "タイマー",
+      "Remote Camera" to "リモートカメラ",
+      "Chat" to "チャット",
+      "Title Card" to "タイトルカード"
+    )
+    project.scenes.forEach { scene ->
+      sceneNames[scene.name]?.let { scene.name = it }
+      scene.sources.forEach { source -> sourceNames[source.name]?.let { source.name = it } }
+    }
+    project.globalSources.forEach { source -> sourceNames[source.name]?.let { source.name = it } }
+  }
+
   fun scene(id: String = selectedSceneId) = project.scenes.firstOrNull { it.id == id }
 
   fun source(id: String? = selectedSourceId): StudioSource? {
