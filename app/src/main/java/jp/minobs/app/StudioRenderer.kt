@@ -13,7 +13,6 @@ import android.view.Surface
 import android.view.View
 import com.pedro.encoder.input.gl.render.filters.BaseFilterRender
 import com.pedro.encoder.input.gl.render.filters.`object`.BaseObjectFilterRender
-import com.pedro.encoder.input.gl.render.filters.`object`.ImageFilterRender
 import com.pedro.encoder.input.gl.render.filters.`object`.SurfaceFilterRender
 import com.pedro.encoder.input.gl.render.filters.`object`.TextFilterRender
 import com.pedro.encoder.input.gl.render.filters.`object`.ViewSurfaceFilterRender
@@ -29,9 +28,11 @@ class StudioRenderer(private val context: Context) {
   private val filters = ConcurrentHashMap<String, BaseFilterRender>()
   private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
   private val whepInputs = ConcurrentHashMap<String, WhepVideoInput>()
+  private val uvcInputs = ConcurrentHashMap<String, UvcVideoInput>()
   private val bitmaps = ConcurrentHashMap<String, Bitmap>()
   private val timers = ConcurrentHashMap<String, Runnable>()
   private val cameraSourceIds = mutableSetOf<String>()
+  private val sourceCostsMs = ConcurrentHashMap<String, Double>()
 
   fun attach(service: ScreenStreamService?) { this.service = service }
 
@@ -54,6 +55,8 @@ class StudioRenderer(private val context: Context) {
     mediaPlayers.clear()
     whepInputs.values.forEach { runCatching { it.stop() } }
     whepInputs.clear()
+    uvcInputs.values.forEach { runCatching { it.stop() } }
+    uvcInputs.clear()
     if (cameraSourceIds.isNotEmpty()) stopServiceCamera()
     cameraSourceIds.clear()
     filters.values.forEach { filter -> runCatching { gl()?.removeFilter(filter) } }
@@ -72,6 +75,7 @@ class StudioRenderer(private val context: Context) {
   fun add(source: StudioSource) {
     val g = gl() ?: return
     if (!source.visible || source.type == StudioSourceType.SCREEN) return
+    val started = System.nanoTime()
 
     val filter: BaseFilterRender? = when (source.type) {
       StudioSourceType.TEXT, StudioSourceType.CHAT -> TextFilterRender().apply {
@@ -83,51 +87,64 @@ class StudioRenderer(private val context: Context) {
       StudioSourceType.TIMER -> TextFilterRender().apply {
         setText(timerText(source), 32f, Color.WHITE, Color.TRANSPARENT)
       }
-      StudioSourceType.IMAGE, StudioSourceType.SLIDESHOW -> ImageFilterRender().apply {
-        bitmaps[source.id]?.let { setImage(it) }
+      StudioSourceType.IMAGE, StudioSourceType.SLIDESHOW -> StudioImageFilterRender().apply {
+        bitmaps[source.id]?.let { setStudioImage(it) }
+        applySource(source)
       }
       StudioSourceType.MEDIA -> mediaFilter(source, source.data)
-      StudioSourceType.CAMERA -> cameraFilter()
+      StudioSourceType.CAMERA -> cameraFilter(source)
+      StudioSourceType.USB_CAPTURE -> usbFilter(source)
       StudioSourceType.EXTERNAL -> externalFilter(source)
       StudioSourceType.BROWSER, StudioSourceType.SCREEN -> null
     }
 
     if (filter != null) {
-      if (filter is BaseObjectFilterRender) applyTransform(filter, source.transform)
+      if (filter is BaseObjectFilterRender && filter !is StudioSurfaceFilterRender && filter !is StudioImageFilterRender) {
+        applyTransform(filter, source.transform)
+      }
       g.addFilter(filter)
       filters[source.id] = filter
       if (source.type == StudioSourceType.CAMERA) cameraSourceIds += source.id
-      if (source.type == StudioSourceType.CLOCK || source.type == StudioSourceType.TIMER) {
-        scheduleDynamicText(source)
-      }
+      if (source.type == StudioSourceType.CLOCK || source.type == StudioSourceType.TIMER) scheduleDynamicText(source)
     }
+    sourceCostsMs[source.id] = (System.nanoTime() - started) / 1_000_000.0
   }
 
   fun updateView(source: StudioSource, view: View) {
     val g = gl() ?: return
     remove(source.id)
+    val started = System.nanoTime()
     val filter = ViewSurfaceFilterRender().apply {
       setView(view)
       applyTransform(this, source.transform)
     }
     g.addFilter(filter)
     filters[source.id] = filter
+    sourceCostsMs[source.id] = (System.nanoTime() - started) / 1_000_000.0
   }
 
   fun remove(id: String) {
     if (cameraSourceIds.remove(id) && cameraSourceIds.isEmpty()) stopServiceCamera()
     whepInputs.remove(id)?.let { runCatching { it.stop() } }
+    uvcInputs.remove(id)?.let { runCatching { it.stop() } }
     filters.remove(id)?.let { runCatching { gl()?.removeFilter(it) } }
     timers.remove(id)?.let { main.removeCallbacks(it) }
     mediaPlayers.remove(id)?.let {
       runCatching { it.stop() }
       runCatching { it.release() }
     }
+    sourceCostsMs.remove(id)
   }
 
   fun updateTransform(source: StudioSource) {
-    val filter = filters[source.id] as? BaseObjectFilterRender ?: return
-    applyTransform(filter, source.transform)
+    val started = System.nanoTime()
+    when (val filter = filters[source.id]) {
+      is StudioSurfaceFilterRender -> filter.applySource(source)
+      is StudioImageFilterRender -> filter.applySource(source)
+      is BaseObjectFilterRender -> applyTransform(filter, source.transform)
+    }
+    val elapsed = (System.nanoTime() - started) / 1_000_000.0
+    sourceCostsMs[source.id] = ((sourceCostsMs[source.id] ?: elapsed) * .75) + elapsed * .25
   }
 
   fun updateVisibility(source: StudioSource) {
@@ -146,18 +163,29 @@ class StudioRenderer(private val context: Context) {
 
   fun updateBitmap(source: StudioSource, bitmap: Bitmap) {
     bitmaps[source.id] = bitmap
-    val current = filters[source.id] as? ImageFilterRender
-    if (current != null) current.setImage(bitmap) else add(source)
+    val current = filters[source.id] as? StudioImageFilterRender
+    if (current != null) {
+      current.setStudioImage(bitmap)
+      current.applySource(source)
+    } else add(source)
   }
 
   fun loadImage(source: StudioSource, uri: Uri): Boolean = runCatching {
-    val bitmap = context.contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)
-      ?: error("decode")
+    val bitmap = context.contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream) ?: error("decode")
     updateBitmap(source, bitmap)
     true
   }.getOrDefault(false)
 
   fun selectedFilter(id: String): BaseObjectFilterRender? = filters[id] as? BaseObjectFilterRender
+
+  fun sourceCostLabel(id: String): String {
+    val ms = sourceCostsMs[id] ?: return "未計測"
+    return when {
+      ms < .25 -> "軽い %.2fms".format(ms)
+      ms < 1.0 -> "標準 %.2fms".format(ms)
+      else -> "重め %.2fms".format(ms)
+    }
+  }
 
   private fun applyTransform(filter: BaseObjectFilterRender, transform: StudioTransform) {
     filter.setScale(transform.width.coerceIn(1f, 100f), transform.height.coerceIn(1f, 100f))
@@ -166,9 +194,15 @@ class StudioRenderer(private val context: Context) {
     filter.alpha = transform.alpha.coerceIn(0f, 1f)
   }
 
-  private fun cameraFilter(): SurfaceFilterRender = SurfaceFilterRender { texture ->
-    texture.setDefaultBufferSize(640, 480)
+  private fun cameraFilter(source: StudioSource): StudioSurfaceFilterRender = StudioSurfaceFilterRender { texture ->
+    texture.setDefaultBufferSize(1280, 720)
     startServiceCamera(texture)
+  }.also { it.applySource(source) }
+
+  private fun usbFilter(source: StudioSource): StudioSurfaceFilterRender {
+    val input = UvcVideoInput(context)
+    uvcInputs[source.id] = input
+    return input.createFilter(source) { android.util.Log.d("MiniOBS-UVC", it) }
   }
 
   private fun externalFilter(source: StudioSource): BaseFilterRender? {
@@ -186,10 +220,8 @@ class StudioRenderer(private val context: Context) {
       }
     }
     val network = specs.firstOrNull {
-      it.startsWith("rtsp://", true) ||
-        it.startsWith("http://", true) ||
-        it.startsWith("https://", true) ||
-        it.startsWith("srt://", true)
+      it.startsWith("rtsp://", true) || it.startsWith("http://", true) ||
+        it.startsWith("https://", true) || it.startsWith("srt://", true)
     }
     return network?.let { mediaFilter(source, it) }
   }
@@ -197,10 +229,8 @@ class StudioRenderer(private val context: Context) {
   private fun startServiceCamera(texture: SurfaceTexture) {
     val target = service ?: return
     runCatching {
-      val method = ScreenStreamService::class.java.getDeclaredMethod(
-        "startOverlayCamera",
-        SurfaceTexture::class.java
-      ).apply { isAccessible = true }
+      val method = ScreenStreamService::class.java.getDeclaredMethod("startOverlayCamera", SurfaceTexture::class.java)
+        .apply { isAccessible = true }
       method.invoke(target, texture)
     }
   }
@@ -208,15 +238,14 @@ class StudioRenderer(private val context: Context) {
   private fun stopServiceCamera() {
     val target = service ?: return
     runCatching {
-      val method = ScreenStreamService::class.java.getDeclaredMethod("stopOverlayCamera")
-        .apply { isAccessible = true }
+      val method = ScreenStreamService::class.java.getDeclaredMethod("stopOverlayCamera").apply { isAccessible = true }
       method.invoke(target)
     }
   }
 
-  private fun mediaFilter(source: StudioSource, location: String): SurfaceFilterRender? {
+  private fun mediaFilter(source: StudioSource, location: String): StudioSurfaceFilterRender? {
     if (location.isBlank()) return null
-    return SurfaceFilterRender { texture ->
+    return StudioSurfaceFilterRender { texture ->
       runCatching {
         texture.setDefaultBufferSize(1280, 720)
         val surface = Surface(texture)
@@ -225,11 +254,12 @@ class StudioRenderer(private val context: Context) {
           setSurface(surface)
           isLooping = !location.startsWith("rtsp://", true)
           setOnPreparedListener { it.start() }
+          setOnCompletionListener { if (!isLooping) runCatching { start() } }
           prepareAsync()
         }
         mediaPlayers[source.id] = player
       }
-    }
+    }.also { it.applySource(source) }
   }
 
   private fun scheduleDynamicText(source: StudioSource) {
