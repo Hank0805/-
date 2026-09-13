@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Handler
@@ -29,6 +30,7 @@ class StudioRenderer(private val context: Context) {
   private val mediaPlayers = ConcurrentHashMap<String, MediaPlayer>()
   private val bitmaps = ConcurrentHashMap<String, Bitmap>()
   private val timers = ConcurrentHashMap<String, Runnable>()
+  private val cameraSourceIds = mutableSetOf<String>()
 
   fun attach(service: ScreenStreamService?) { this.service = service }
 
@@ -49,6 +51,8 @@ class StudioRenderer(private val context: Context) {
       runCatching { player.release() }
     }
     mediaPlayers.clear()
+    if (cameraSourceIds.isNotEmpty()) stopServiceCamera()
+    cameraSourceIds.clear()
     filters.values.forEach { filter -> runCatching { gl()?.removeFilter(filter) } }
     filters.clear()
   }
@@ -80,20 +84,15 @@ class StudioRenderer(private val context: Context) {
         bitmaps[source.id]?.let { setImage(it) }
       }
       StudioSourceType.MEDIA -> mediaFilter(source)
-      StudioSourceType.BROWSER, StudioSourceType.EXTERNAL, StudioSourceType.CAMERA, StudioSourceType.SCREEN -> null
-    }
-
-    if (source.type == StudioSourceType.CAMERA) {
-      service?.selectSource(ScreenStreamService.SourceKind.CAMERA)
-      val enabled = runCatching { service?.toggleCameraSource() }.getOrNull()
-      if (enabled == false) runCatching { service?.toggleCameraSource() }
-      return
+      StudioSourceType.CAMERA -> cameraFilter(source)
+      StudioSourceType.BROWSER, StudioSourceType.EXTERNAL, StudioSourceType.SCREEN -> null
     }
 
     if (filter != null) {
       if (filter is BaseObjectFilterRender) applyTransform(filter, source.transform)
       g.addFilter(filter)
       filters[source.id] = filter
+      if (source.type == StudioSourceType.CAMERA) cameraSourceIds += source.id
       if (source.type == StudioSourceType.CLOCK || source.type == StudioSourceType.TIMER) {
         scheduleDynamicText(source)
       }
@@ -112,6 +111,7 @@ class StudioRenderer(private val context: Context) {
   }
 
   fun remove(id: String) {
+    if (cameraSourceIds.remove(id) && cameraSourceIds.isEmpty()) stopServiceCamera()
     filters.remove(id)?.let { runCatching { gl()?.removeFilter(it) } }
     timers.remove(id)?.let { main.removeCallbacks(it) }
     mediaPlayers.remove(id)?.let {
@@ -155,16 +155,35 @@ class StudioRenderer(private val context: Context) {
   fun selectedFilter(id: String): BaseObjectFilterRender? = filters[id] as? BaseObjectFilterRender
 
   private fun applyTransform(filter: BaseObjectFilterRender, transform: StudioTransform) {
-    filter.setScale(
-      transform.width.coerceIn(1f, 100f),
-      transform.height.coerceIn(1f, 100f)
-    )
-    filter.setPosition(
-      transform.x.coerceIn(-100f, 100f),
-      transform.y.coerceIn(-100f, 100f)
-    )
+    filter.setScale(transform.width.coerceIn(1f, 100f), transform.height.coerceIn(1f, 100f))
+    filter.setPosition(transform.x.coerceIn(-100f, 100f), transform.y.coerceIn(-100f, 100f))
     filter.rotation = transform.rotation
     filter.alpha = transform.alpha.coerceIn(0f, 1f)
+  }
+
+  private fun cameraFilter(source: StudioSource): SurfaceFilterRender = SurfaceFilterRender { texture ->
+    texture.setDefaultBufferSize(640, 480)
+    startServiceCamera(texture)
+  }
+
+  private fun startServiceCamera(texture: SurfaceTexture) {
+    val target = service ?: return
+    runCatching {
+      val method = ScreenStreamService::class.java.getDeclaredMethod(
+        "startOverlayCamera",
+        SurfaceTexture::class.java
+      ).apply { isAccessible = true }
+      method.invoke(target, texture)
+    }
+  }
+
+  private fun stopServiceCamera() {
+    val target = service ?: return
+    runCatching {
+      val method = ScreenStreamService::class.java.getDeclaredMethod("stopOverlayCamera")
+        .apply { isAccessible = true }
+      method.invoke(target)
+    }
   }
 
   private fun mediaFilter(source: StudioSource): SurfaceFilterRender? {
