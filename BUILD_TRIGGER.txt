@@ -1,2 +1,2 @@
-Trigger GitHub Actions build for Mini OBS v0.4
-Kotlin fix rebuild 1
+Trigger GitHub Actions build for Mini OBS v0.4.1
+WHEP compile check 1
