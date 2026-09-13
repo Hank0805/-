@@ -1,0 +1,218 @@
+name: Localize Mini OBS Japanese
+
+on:
+  push:
+    branches: [ v0.5-obs-studio ]
+    paths: [ '.github/localize-ja-trigger.txt' ]
+
+permissions:
+  contents: write
+
+jobs:
+  localize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v0.5-obs-studio
+      - name: Apply Japanese UI
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace_file(path, replacements):
+              p = Path(path)
+              s = p.read_text(encoding='utf-8')
+              before = s
+              for a, b in replacements:
+                  s = s.replace(a, b)
+              p.write_text(s, encoding='utf-8')
+              print(path, 'changed' if s != before else 'unchanged')
+
+          activity = 'app/src/main/java/jp/minobs/app/ObsStudioActivity.kt'
+          replace_file(activity, [
+              ('toast("Capture start failed")', 'toast("画面取り込みを開始できませんでした")'),
+              ('toast("Project exported")', 'toast("プロジェクトを書き出しました")'),
+              ('toast("Export failed")', 'toast("書き出しに失敗しました")'),
+              ('toast("Project imported")', 'toast("プロジェクトを読み込みました")'),
+              ('toast("Import failed")', 'toast("読み込みに失敗しました")'),
+              ('StudioTransition.entries.map { it.name }', 'StudioTransition.entries.map { transitionLabel(it) }'),
+              ('toast("Replay clips: ${service?.saveReplay() ?: 0}")', 'toast("リプレイを保存しました: ${service?.saveReplay() ?: 0}")'),
+              ('"Start Capture first"', '"先に画面取り込みを開始してください"'),
+              ('dialogs.text("Scene name")', 'dialogs.text("シーン名")'),
+              ('binding.txtMicMixer.text = "MIC  $progress%"', 'binding.txtMicMixer.text = "マイク  $progress%"'),
+              ('binding.txtGameMixer.text = "GAME  $progress%"', 'binding.txtGameMixer.text = "内部音声  $progress%"'),
+              ('binding.btnMicMute.text = if (micMuted) "MIC Unmute" else "MIC Mute"', 'binding.btnMicMute.text = if (micMuted) "マイク ミュート解除" else "マイク ミュート"'),
+              ('"Text", "Image", "Camera", "Browser", "Media / Video", "Slideshow",\n      "Clock", "Timer", "Remote Camera", "Chat Overlay", "Title Card"', '"テキスト", "画像", "カメラ", "ブラウザ", "メディア / 動画", "スライドショー",\n      "時計", "タイマー", "リモートカメラ", "チャット表示", "タイトルカード"'),
+              ('AlertDialog.Builder(this).setTitle("Add Source")', 'AlertDialog.Builder(this).setTitle("ソースを追加")'),
+              ('dialogs.text("Text")', 'dialogs.text("テキスト")'),
+              ('StudioSourceType.TEXT, "Text"', 'StudioSourceType.TEXT, "テキスト"'),
+              ('StudioSourceType.IMAGE, "Image"', 'StudioSourceType.IMAGE, "画像"'),
+              ('StudioSourceType.CAMERA, "Camera"', 'StudioSourceType.CAMERA, "カメラ"'),
+              ('dialogs.text("Browser URL")', 'dialogs.text("ブラウザURL")'),
+              ('StudioSourceType.BROWSER, "Browser"', 'StudioSourceType.BROWSER, "ブラウザ"'),
+              ('StudioSourceType.MEDIA, "Media"', 'StudioSourceType.MEDIA, "メディア"'),
+              ('StudioSourceType.SLIDESHOW, "Slideshow"', 'StudioSourceType.SLIDESHOW, "スライドショー"'),
+              ('StudioSourceType.CLOCK, "Clock"', 'StudioSourceType.CLOCK, "時計"'),
+              ('StudioSourceType.TIMER, "Timer"', 'StudioSourceType.TIMER, "タイマー"'),
+              ('StudioSourceType.EXTERNAL, "Remote Camera"', 'StudioSourceType.EXTERNAL, "リモートカメラ"'),
+              ('toast("Use Camera Node / Remote Studio")', 'toast("カメラノード / リモートスタジオから接続してください")'),
+              ('StudioSourceType.CHAT, "Chat", "Chat Overlay"', 'StudioSourceType.CHAT, "チャット", "チャット表示"'),
+              ('dialogs.text("Title")', 'dialogs.text("タイトル")'),
+              ('StudioSourceType.TEXT, "Title Card"', 'StudioSourceType.TEXT, "タイトルカード"'),
+              ('"Source Properties — ${source?.name ?: "none"}"', '"ソースのプロパティ — ${source?.name ?: "未選択"}"'),
+              ('"👁 Visible"', '"👁 表示"'),
+              ('"○ Hidden"', '"○ 非表示"'),
+              ('"🔒 Locked"', '"🔒 ロック中"'),
+              ('"🔓 Unlock"', '"🔓 ロック解除"'),
+              ('"Scene Source"', '"シーンソース"'),
+              ('"Global"', '"グローバル"'),
+              ('"No source selected"', '"ソースが選択されていません"'),
+              ('"PREVIEW — ${scene.name}"', '"プレビュー — ${scene.name}"'),
+              ('arrayOf("Rename", "Duplicate", "Save preset", "Toggle global", "Reset transform", "Remove")', 'arrayOf("名前を変更", "複製", "プリセット保存", "グローバル切替", "変形をリセット", "削除")'),
+              ('dialogs.text("Rename", source.name)', 'dialogs.text("名前を変更", source.name)'),
+              ('dialogs.text("Preset name", source.name)', 'dialogs.text("プリセット名", source.name)'),
+              ('toast("Preset saved")', 'toast("プリセットを保存しました")'),
+              ('arrayOf("Rotate +90°", "Opacity 100%", "Opacity 50%", "Fade in", "Slide in", "Add filter label")', 'arrayOf("右へ90°回転", "不透明度 100%", "不透明度 50%", "フェードイン", "スライドイン", "フィルター名を追加")'),
+              ('"Filters — ${source.name}"', '"フィルター — ${source.name}"'),
+              ('dialogs.text("Filter name")', 'dialogs.text("フィルター名")'),
+              ('toast("Filter chain updated")', 'toast("フィルターを更新しました")'),
+              ('arrayListOf("Save current")', 'arrayListOf("現在の設定を保存")'),
+              ('setTitle("Presets")', 'setTitle("プリセット")'),
+              ('"Stream output: ${source.streamAudio}"', '"配信へ出力: ${source.streamAudio}"'),
+              ('"Record output: ${source.recordAudio}"', '"録画へ出力: ${source.recordAudio}"'),
+              ('"Monitor: ${source.audioMonitor}"', '"モニター: ${source.audioMonitor}"'),
+              ('"Track: ${source.audioTrack}"', '"トラック: ${source.audioTrack}"'),
+              ('"Delay: ${source.audioDelayMs}ms"', '"遅延: ${source.audioDelayMs}ms"'),
+              ('setTitle("Advanced Audio")', 'setTitle("詳細オーディオ設定")'),
+              ('dialogs.text("Delay ms"', 'dialogs.text("遅延 ms"'),
+              ('val presets = arrayOf("game", "voice", "broadcast", "flat")\n    AlertDialog.Builder(this).setTitle("Audio filters").setItems(presets)', 'val presets = arrayOf("game", "voice", "broadcast", "flat")\n    val labels = arrayOf("ゲーム", "音声", "配信", "フラット")\n    AlertDialog.Builder(this).setTitle("オーディオフィルター").setItems(labels)'),
+              ('arrayListOf("Add macro", "Run MANUAL")', 'arrayListOf("マクロを追加", "手動実行")'),
+              ('setTitle("Macros")', 'setTitle("マクロ")'),
+              ('dialogs.text("Macro: trigger,action"', 'dialogs.text("マクロ: トリガー,アクション"'),
+              ('name = "Macro ${workspace.project.macros.size + 1}"', 'name = "マクロ ${workspace.project.macros.size + 1}"'),
+              ('arrayOf("Export project", "Import project", "Autosave", "Reset", "Toggle Safe Area", "Toggle Studio Mode")', 'arrayOf("プロジェクトを書き出す", "プロジェクトを読み込む", "自動保存", "リセット", "セーフエリア切替", "スタジオモード切替")'),
+              ('setTitle("Project")', 'setTitle("プロジェクト")'),
+              ('toast("Autosaved")', 'toast("自動保存しました")'),
+              ('toast("Studio Mode ${workspace.project.studioMode}")', 'toast("スタジオモード: ${if (workspace.project.studioMode) "ON" else "OFF"}")'),
+              ('"Output WxH FPS kbps"', '"出力設定  幅x高さ FPS kbps"'),
+              ('"RTMP URLs separated by |"', '"RTMP URL（複数は | で区切る）"'),
+              ('val names = StudioPerformanceMode.entries.map { it.name }.toTypedArray()', 'val names = StudioPerformanceMode.entries.map { performanceLabel(it) }.toTypedArray()'),
+              ('setTitle("Performance")', 'setTitle("パフォーマンス")'),
+              ('"✓ Audio permission"', '"✓ 音声権限 OK"'),
+              ('"✕ Audio permission"', '"✕ 音声権限なし"'),
+              ('"✓ Capture ready"', '"✓ 画面取り込み準備完了"'),
+              ('"! Capture stopped"', '"! 画面取り込み停止中"'),
+              ('"✓ ${endpoints.size} stream destination(s)"', '"✓ 配信先 ${endpoints.size}件"'),
+              ('"! No RTMP destination"', '"! RTMP配信先が未設定"'),
+              ('"✓ Project autosave enabled"', '"✓ プロジェクト自動保存 ON"'),
+              ('"✓ Free storage ${filesDir.freeSpace / 1024 / 1024} MB"', '"✓ 空き容量 ${filesDir.freeSpace / 1024 / 1024} MB"'),
+              ('setTitle("Preflight")', 'setTitle("配信前チェック")'),
+              ('toast("OutputでRTMP URLを設定してください")', 'toast("出力設定でRTMP URLを設定してください")'),
+              ('binding.btnCapture.text = if (ready) "Stop Capture" else "Start Capture"', 'binding.btnCapture.text = if (ready) "画面取り込み停止" else "画面取り込み開始"'),
+              ('binding.btnStream.text = if (live) "Stop Streaming" else "Start Streaming"', 'binding.btnStream.text = if (live) "配信停止" else "配信開始"'),
+              ('binding.btnRecord.text = if (recording) "Stop Recording" else "Start Recording"', 'binding.btnRecord.text = if (recording) "録画停止" else "録画開始"'),
+              ('service?.isPrivacyMode() == true -> "PRIVACY"', 'service?.isPrivacyMode() == true -> "プライバシー"'),
+              ('live -> "LIVE"', 'live -> "配信中"'),
+              ('recording -> "REC"', 'recording -> "録画中"'),
+              ('ready -> "READY"', 'ready -> "準備完了"'),
+              ('else -> "OFFLINE"', 'else -> "停止中"'),
+              ('"${status.optLong("bitrateKbps")}kbps | Drop ${status.optLong("droppedVideo")}/${status.optLong("droppedAudio")} | " +', '"${status.optLong("bitrateKbps")}kbps | ドロップ ${status.optLong("droppedVideo")}/${status.optLong("droppedAudio")} | " +'),
+              ('"${status.optDouble("temperature")}℃ | Battery ${status.optInt("battery")}% | Free ${status.optLong("storageFreeMb")}MB"', '"${status.optDouble("temperature")}℃ | バッテリー ${status.optInt("battery")}% | 空き ${status.optLong("storageFreeMb")}MB"'),
+              ('toast("Screenshot saved")', 'toast("スクリーンショットを保存しました")'),
+              ('toast("Screenshot failed")', 'toast("スクリーンショットの保存に失敗しました")'),
+          ])
+
+          # Helper labels keep enum/internal JSON names unchanged.
+          p = Path(activity)
+          s = p.read_text(encoding='utf-8')
+          marker = '  private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()\n'
+          helpers = '''  private fun transitionLabel(value: StudioTransition): String = when (value) {\n    StudioTransition.CUT -> "カット"\n    StudioTransition.FADE -> "フェード"\n    StudioTransition.SLIDE -> "スライド"\n    StudioTransition.ZOOM -> "ズーム"\n    StudioTransition.WIPE -> "ワイプ"\n    StudioTransition.STINGER -> "スティンガー"\n  }\n\n  private fun performanceLabel(value: StudioPerformanceMode): String = when (value) {\n    StudioPerformanceMode.QUALITY -> "高画質"\n    StudioPerformanceMode.BALANCED -> "バランス"\n    StudioPerformanceMode.BATTERY -> "省電力"\n  }\n\n'''
+          if helpers not in s:
+              s = s.replace(marker, helpers + marker)
+              p.write_text(s, encoding='utf-8')
+
+          replace_file('app/src/main/res/layout/activity_obs_studio.xml', [
+              ('android:text="OFFLINE"', 'android:text="停止中"'),
+              ('android:text="Classic"', 'android:text="クラシック"'),
+              ('android:text="PREVIEW"', 'android:text="プレビュー"'),
+              ('android:text="PROGRAM"', 'android:text="本番"'),
+              ('android:text="TAKE →"', 'android:text="反映 →"'),
+              ('android:text="Scenes"', 'android:text="シーン"'),
+              ('android:text="Sources"', 'android:text="ソース"'),
+              ('android:text="Source Properties — none"', 'android:text="ソースのプロパティ — 未選択"'),
+              ('android:text="Move / pinch / rotate directly on PROGRAM. Double tap = Fit to screen. Snap guides are automatic."', 'android:text="本番画面で直接、移動・ピンチ拡大縮小・回転できます。ダブルタップで画面に合わせます。スナップガイドは自動です。"'),
+              ('android:text="Center"', 'android:text="中央"'),
+              ('android:text="Fit"', 'android:text="画面に合わせる"'),
+              ('android:text="Opacity"', 'android:text="不透明度"'),
+              ('android:text="👁 Visible"', 'android:text="👁 表示"'),
+              ('android:text="🔓 Unlock"', 'android:text="🔓 ロック解除"'),
+              ('android:text="Global"', 'android:text="グローバル"'),
+              ('android:text="Filters"', 'android:text="フィルター"'),
+              ('android:text="Preset"', 'android:text="プリセット"'),
+              ('android:text="Audio Mixer"', 'android:text="音声ミキサー"'),
+              ('android:text="MIC  100%"', 'android:text="マイク  100%"'),
+              ('android:text="GAME  100%"', 'android:text="内部音声  100%"'),
+              ('android:text="MIC Mute"', 'android:text="マイク ミュート"'),
+              ('android:text="Routing / Tracks"', 'android:text="ルーティング / トラック"'),
+              ('android:text="Audio Filters"', 'android:text="音声フィルター"'),
+              ('android:text="Controls"', 'android:text="操作"'),
+              ('android:text="Start Capture"', 'android:text="画面取り込み開始"'),
+              ('android:text="Start Streaming"', 'android:text="配信開始"'),
+              ('android:text="Start Recording"', 'android:text="録画開始"'),
+              ('android:text="Replay"', 'android:text="リプレイ"'),
+              ('android:text="Screenshot"', 'android:text="スクリーンショット"'),
+              ('android:text="Smart Action"', 'android:text="スマート操作"'),
+              ('android:text="Remote"', 'android:text="リモート"'),
+              ('android:text="PANIC"', 'android:text="緊急"'),
+              ('android:text="Tools / Automation / Project"', 'android:text="ツール / 自動化 / プロジェクト"'),
+              ('android:text="Preflight"', 'android:text="配信前チェック"'),
+              ('android:text="Macros"', 'android:text="マクロ"'),
+              ('android:text="Project"', 'android:text="プロジェクト"'),
+              ('android:text="Output"', 'android:text="出力設定"'),
+              ('android:text="Performance"', 'android:text="パフォーマンス"'),
+              ('android:text="FPS -- | Bitrate -- | Dropped -- | Temp -- | Storage --"', 'android:text="FPS -- | ビットレート -- | ドロップ -- | 温度 -- | 空き容量 --"'),
+          ])
+
+          replace_file('app/src/main/java/jp/minobs/app/StudioModels.kt', [
+              ('var name: String = "Mini OBS Project"', 'var name: String = "Mini OBS プロジェクト"'),
+              ('o.optString("name", "Source")', 'o.optString("name", "ソース")'),
+              ('o.optString("name", "Scene")', 'o.optString("name", "シーン")'),
+              ('StudioScene(name = "GAME"', 'StudioScene(name = "ゲーム"'),
+              ('StudioScene(name = "TALK"', 'StudioScene(name = "雑談"'),
+              ('StudioScene(name = "WAIT"', 'StudioScene(name = "待機"'),
+              ('StudioSource(name = "Screen Capture"', 'StudioSource(name = "画面キャプチャ"'),
+              ('StudioSource(name = "Starting Soon"', 'StudioSource(name = "まもなく開始"'),
+              ('o.optString("name", "Mini OBS Project")', 'o.optString("name", "Mini OBS プロジェクト")'),
+          ])
+
+          replace_file('app/src/main/java/jp/minobs/app/StudioWorkspace.kt', [
+              ('"Scene ${project.scenes.size + 1}"', '"シーン ${project.scenes.size + 1}"'),
+              ('name = "Screen Capture"', 'name = "画面キャプチャ"'),
+              ('it.name = src.name + " Copy"', 'it.name = src.name + " のコピー"'),
+              ('it.name += " Copy"', 'it.name += " のコピー"'),
+          ])
+
+          replace_file('app/src/main/java/jp/minobs/app/StudioAutomation.kt', [
+              ('onToast("最初にCaptureを開始してください")', 'onToast("最初に画面取り込みを開始してください")'),
+              ('it.name.equals("WAIT", true)', '(it.name.equals("WAIT", true) || it.name == "待機")'),
+              ('onToast("3秒後にGAME + REC")', 'onToast("3秒後にゲーム画面へ切替＋録画開始")'),
+              ('it.name.equals("GAME", true)', '(it.name.equals("GAME", true) || it.name == "ゲーム")'),
+          ])
+
+          replace_file('app/build.gradle.kts', [
+              ('versionCode = 6', 'versionCode = 7'),
+              ('versionName = "0.5.0"', 'versionName = "0.5.1"'),
+          ])
+
+      - name: Commit Japanese UI
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app
+          if git diff --cached --quiet; then
+            echo "No localization changes"
+          else
+            git commit -m "Japanese UI localization v0.5.1"
+            git push origin HEAD:v0.5-obs-studio
+          fi
