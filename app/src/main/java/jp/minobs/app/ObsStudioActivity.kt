@@ -48,6 +48,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private lateinit var workspace: StudioWorkspace
   private lateinit var dialogs: StudioDialogs
   private lateinit var automation: StudioAutomation
+  private lateinit var uiEnhancer: StudioUiEnhancer
 
   private val renderer by lazy { StudioRenderer(this) }
   private val dynamic by lazy { StudioDynamicSources(this, renderer) }
@@ -201,6 +202,17 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     binding.programSurface.holder.addCallback(this)
     setupUi()
+    uiEnhancer = StudioUiEnhancer(
+      activity = this,
+      binding = binding,
+      workspace = workspace,
+      renderer = renderer,
+      onRefresh = ::refreshAll,
+      onRebuild = ::rebuildProgram,
+      onPreflight = ::showPreflight,
+      onEndpoint = ::showEndpointDialog
+    )
+    uiEnhancer.install()
     ensureService()
     refreshAll()
   }
@@ -385,8 +397,8 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun showAddSource() {
     val labels = arrayOf(
-      "テキスト", "画像", "カメラ", "ブラウザ", "メディア / 動画", "スライドショー",
-      "時計", "タイマー", "リモートカメラ", "チャット表示", "タイトルカード"
+      "テキスト", "画像", "カメラ", "USBキャプチャ", "ブラウザ", "メディア / 動画",
+      "スライドショー", "時計", "タイマー", "リモートカメラ", "チャット表示", "タイトルカード"
     )
     AlertDialog.Builder(this).setTitle("ソースを追加").setItems(labels) { _, index ->
       when (index) {
@@ -404,39 +416,44 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
           requestCamera()
           refreshSources(); rebuildProgram()
         }
-        3 -> dialogs.text("ブラウザURL") {
+        3 -> {
+          workspace.addSource(StudioSourceType.USB_CAPTURE, "USBキャプチャ", "usb:")
+          refreshSources(); rebuildProgram()
+          toast("UVC対応キャプチャーボードをUSB-Cへ接続してください")
+        }
+        4 -> dialogs.text("ブラウザURL") {
           val source = workspace.addSource(StudioSourceType.BROWSER, "ブラウザ", it)
           refreshSources(); dynamic.startBrowser(source)
         }
-        4 -> {
+        5 -> {
           val source = workspace.addSource(StudioSourceType.MEDIA, "メディア")
           pendingMediaId = source.id
           mediaLauncher.launch(arrayOf("video/*", "audio/*"))
           refreshSources()
         }
-        5 -> {
+        6 -> {
           val source = workspace.addSource(StudioSourceType.SLIDESHOW, "スライドショー")
           pendingSlideId = source.id
           slidesLauncher.launch(arrayOf("image/*"))
           refreshSources()
         }
-        6 -> {
+        7 -> {
           workspace.addSource(StudioSourceType.CLOCK, "時計", "HH:mm:ss")
           refreshSources(); rebuildProgram()
         }
-        7 -> {
+        8 -> {
           workspace.addSource(StudioSourceType.TIMER, "タイマー", "${System.currentTimeMillis()}|0")
           refreshSources(); rebuildProgram()
         }
-        8 -> {
+        9 -> {
           workspace.addSource(StudioSourceType.EXTERNAL, "リモートカメラ", "remote:1")
           refreshSources(); toast("カメラノード / リモートスタジオから接続してください")
         }
-        9 -> {
+        10 -> {
           workspace.addSource(StudioSourceType.CHAT, "チャット", "チャット表示")
           refreshSources(); rebuildProgram()
         }
-        10 -> dialogs.text("タイトル") {
+        11 -> dialogs.text("タイトル") {
           val source = workspace.addSource(StudioSourceType.TEXT, "タイトルカード", it)
           source.transform = StudioTransform(12f, 38f, 76f, 20f)
           refreshSources(); rebuildProgram()
@@ -455,7 +472,17 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
   private fun refreshScenes() {
     binding.sceneList.removeAllViews()
+    val density = resources.displayMetrics.density
     workspace.project.scenes.forEach { scene ->
+      val row = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = android.view.Gravity.CENTER_VERTICAL
+      }
+      val thumb = android.widget.ImageView(this).apply {
+        setImageBitmap(StudioAdvancedDialogs.sceneThumbnail(scene, workspace.project.globalSources))
+        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+        setPadding(2, 2, 4, 2)
+      }
       val button = Button(this).apply {
         text = buildString {
           if (workspace.project.programSceneId == scene.id) append("● ")
@@ -463,22 +490,27 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
           append(scene.name)
         }
         setAllCaps(false)
+        maxLines = 2
         setOnClickListener {
           workspace.selectedSceneId = scene.id
-          if (workspace.project.studioMode) {
-            workspace.project.previewSceneId = scene.id
-          } else {
+          if (workspace.project.studioMode) workspace.project.previewSceneId = scene.id
+          else {
             workspace.project.programSceneId = scene.id
             rebuildProgram()
           }
           workspace.autosave()
           refreshAll()
         }
+        setOnLongClickListener {
+          StudioAdvancedDialogs.showSceneTransition(this@ObsStudioActivity, scene, workspace.project) {
+            workspace.autosave(); refreshScenes()
+          }
+          true
+        }
       }
-      binding.sceneList.addView(
-        button,
-        LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 44)
-      )
+      row.addView(thumb, LinearLayout.LayoutParams((76 * density).toInt(), (44 * density).toInt()))
+      row.addView(button, LinearLayout.LayoutParams(0, (52 * density).toInt(), 1f))
+      binding.sceneList.addView(row)
     }
   }
 
@@ -495,24 +527,28 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
         text = if (source.visible) "👁" else "○"
         minWidth = 0
         setOnClickListener {
-          workspace.checkpoint()
-          source.visible = !source.visible
-          workspace.autosave()
-          renderer.updateVisibility(source)
-          refreshSources()
+          workspace.checkpoint(); source.visible = !source.visible; workspace.autosave()
+          renderer.updateVisibility(source); refreshSources()
         }
       }
       val name = Button(this).apply {
-        text = (if (source.locked) "🔒 " else "") +
-          (if (source.global) "🌐 " else "") + source.name
+        text = buildString {
+          append(StudioAdvancedDialogs.sourceIcon(source.type)).append(" ")
+          if (source.locked) append("🔒 ")
+          if (source.global) append("🌐 ")
+          if (!source.groupId.isNullOrBlank()) append("🔗 ")
+          append(source.name)
+        }
         setAllCaps(false)
+        maxLines = 2
         setOnClickListener { selectSource(source) }
         setOnLongClickListener { showSourceMenu(source); true }
       }
-      row.addView(eye, LinearLayout.LayoutParams(54, 44))
-      row.addView(name, LinearLayout.LayoutParams(0, 44, 1f))
+      row.addView(eye, LinearLayout.LayoutParams(54, 52))
+      row.addView(name, LinearLayout.LayoutParams(0, 52, 1f))
       binding.sourceList.addView(row)
     }
+    if (::uiEnhancer.isInitialized) uiEnhancer.refreshSelectedSourceCost()
   }
 
   private fun selectSource(source: StudioSource) {
@@ -530,6 +566,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     binding.btnLock.text = if (source?.locked == true) "🔒 ロック中" else "🔓 ロック解除"
     binding.btnGlobal.text = if (source?.global == true) "シーンソース" else "グローバル"
     if (source != null) updateTransformText(source) else binding.txtTransformValues.text = "ソースが選択されていません"
+    if (::uiEnhancer.isInitialized) uiEnhancer.refreshSelectedSourceCost()
   }
 
   private fun updateTransformText(source: StudioSource) {
@@ -577,8 +614,10 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     workspace.selectedSceneId = id
     workspace.autosave()
 
-    val duration = workspace.project.transitionMs.toLong()
-    if (workspace.project.transition == StudioTransition.CUT) {
+    val targetScene = workspace.project.scenes.firstOrNull { it.id == id }
+    val transition = targetScene?.transitionOverride ?: workspace.project.transition
+    val duration = (targetScene?.transitionMsOverride ?: workspace.project.transitionMs).toLong()
+    if (transition == StudioTransition.CUT) {
       rebuildProgram()
     } else {
       binding.programFrame.animate()
@@ -635,34 +674,68 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   }
 
   private fun showSourceMenu(source: StudioSource) {
-    val items = arrayOf("名前を変更", "複製", "プリセット保存", "グローバル切替", "変形をリセット", "削除")
+    workspace.selectedSourceId = source.id
+    binding.transformOverlay.select(source)
+    val items = arrayOf(
+      "名前を変更", "複製", "変形", "クロップ", "フィルター", "グループ / 解除",
+      "プリセット保存", "グローバル切替", "変形をリセット", "削除"
+    )
     AlertDialog.Builder(this).setTitle(source.name).setItems(items) { _, index ->
       when (index) {
         0 -> dialogs.text("名前を変更", source.name) { source.name = it; workspace.autosave(); refreshSources() }
         1 -> { workspace.duplicateSource(source.id); refreshSources(); rebuildProgram() }
-        2 -> dialogs.text("プリセット名", source.name) { workspace.savePreset(it, source); toast("プリセットを保存しました") }
-        3 -> { workspace.toggleGlobal(source.id); refreshSources(); rebuildProgram() }
-        4 -> {
+        2 -> {
+          workspace.checkpoint()
+          StudioAdvancedDialogs.showTransform(this, source) {
+            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
+          }
+        }
+        3 -> {
+          workspace.checkpoint()
+          StudioAdvancedDialogs.showCrop(this, source) {
+            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
+          }
+        }
+        4 -> showFilters()
+        5 -> {
+          if (!source.groupId.isNullOrBlank()) {
+            workspace.ungroup(source.groupId); refreshSources()
+          } else workspace.scene()?.let { scene ->
+            StudioAdvancedDialogs.showGroup(this, scene, workspace) { refreshSources() }
+          }
+        }
+        6 -> dialogs.text("プリセット名", source.name) { workspace.savePreset(it, source); toast("プリセットを保存しました") }
+        7 -> { workspace.toggleGlobal(source.id); refreshSources(); rebuildProgram() }
+        8 -> {
           workspace.checkpoint(); source.transform = StudioTransform(); workspace.autosave()
           rebuildProgram(); selectSource(source)
         }
-        5 -> { renderer.remove(source.id); workspace.removeSource(source.id); refreshSources(); rebuildProgram() }
+        9 -> { renderer.remove(source.id); workspace.removeSource(source.id); refreshSources(); rebuildProgram() }
       }
     }.show()
   }
 
   private fun showFilters() {
     val source = workspace.source() ?: return
-    val items = arrayOf("右へ90°回転", "不透明度 100%", "不透明度 50%", "フェードイン", "スライドイン", "フィルター名を追加")
+    val items = arrayOf(
+      "クロマキー", "右へ90°回転", "不透明度 100%", "不透明度 50%",
+      "フェードイン", "スライドイン", "フィルター名を追加"
+    )
     AlertDialog.Builder(this).setTitle("フィルター — ${source.name}").setItems(items) { _, index ->
       workspace.checkpoint()
       when (index) {
-        0 -> source.transform.rotation = (source.transform.rotation + 90) % 360
-        1 -> source.transform.alpha = 1f
-        2 -> source.transform.alpha = .5f
-        3 -> animateSource(source, true)
-        4 -> animateSource(source, false)
-        5 -> dialogs.text("フィルター名") { source.filters += StudioFilter(it); toast("フィルターを更新しました") }
+        0 -> {
+          StudioAdvancedDialogs.showChroma(this, source) {
+            workspace.autosave(); renderer.updateTransform(source); refreshProperties()
+          }
+          return@setItems
+        }
+        1 -> source.transform.rotation = (source.transform.rotation + 90) % 360
+        2 -> source.transform.alpha = 1f
+        3 -> source.transform.alpha = .5f
+        4 -> animateSource(source, true)
+        5 -> animateSource(source, false)
+        6 -> dialogs.text("フィルター名") { source.filters += StudioFilter(it); workspace.autosave(); toast("フィルターを更新しました") }
       }
       workspace.autosave(); renderer.updateTransform(source); refreshProperties()
     }.show()
@@ -815,9 +888,7 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
   }
 
   private fun showEndpointDialog() {
-    dialogs.text("RTMP URL（複数は | で区切る）", getEndpoints().joinToString("|")) {
-      saveEndpoints(it.split('|'))
-    }
+    StreamEndpointSettings.show(this) { toast("配信先設定を保存しました") }
   }
 
   private fun showPerformance() {
@@ -850,28 +921,14 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
       s.stopRtmp()
     } else {
       val endpoints = getEndpoints()
-      if (endpoints.isEmpty()) { toast("出力設定でRTMP URLを設定してください"); return }
+      if (endpoints.isEmpty()) { toast("出力設定で配信サーバーURLとストリームキーを設定してください"); return }
       s.startMultiRtmp(endpoints)
     }
     automation.run("STREAM_TOGGLE")
     refreshControls()
   }
 
-  private fun getEndpoints(): List<String> =
-    getSharedPreferences("studio_output", MODE_PRIVATE)
-      .getString("rtmp", "")
-      .orEmpty()
-      .lines()
-      .map { it.trim() }
-      .filter { it.startsWith("rtmp://") || it.startsWith("rtmps://") }
-      .take(4)
-
-  private fun saveEndpoints(values: List<String>) {
-    getSharedPreferences("studio_output", MODE_PRIVATE)
-      .edit()
-      .putString("rtmp", values.joinToString("\n"))
-      .apply()
-  }
+  private fun getEndpoints(): List<String> = StreamEndpointSettings.endpoints(this)
 
   private fun requestCapture() {
     val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO)
