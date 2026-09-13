@@ -1,0 +1,6 @@
+Mini OBS Android v0.1 prototype
+
+This project depends on RootEncoder by pedroSG94, licensed under Apache License 2.0.
+https://github.com/pedroSG94/RootEncoder
+
+No RootEncoder source files are redistributed in this project; Gradle resolves the library from JitPack.

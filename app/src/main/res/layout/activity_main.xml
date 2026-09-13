@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mini OBS" android:textColor="@color/text" android:textSize="24sp" android:textStyle="bold" />
+                <TextView android:id="@+id/txtStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="待機中" android:textColor="@color/muted" android:textSize="13sp" />
+            </LinearLayout>
+            <TextView android:id="@+id/txtLive" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/panel_bg" android:paddingHorizontal="12dp" android:paddingVertical="7dp" android:text="OFFLINE" android:textColor="@color/muted" android:textStyle="bold" />
+        </LinearLayout>
+        <FrameLayout android:layout_width="match_parent" android:layout_height="210dp" android:layout_marginTop="16dp" android:background="@drawable/preview_bg">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="画面キャプチャ" android:textColor="@color/text" android:textSize="20sp" android:textStyle="bold" />
+                <TextView android:id="@+id/txtPreviewHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:gravity="center" android:text="「画面共有を開始」でAndroidの画面共有許可を開きます\n共有後は他のアプリへ移動してOK" android:textColor="@color/muted" android:textSize="13sp" />
+            </LinearLayout>
+        </FrameLayout>
+        <Button android:id="@+id/btnCapture" android:layout_width="match_parent" android:layout_height="54dp" android:layout_marginTop="14dp" android:text="画面共有を開始" android:textAllCaps="false" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="14dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="シーン" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold" />
+            <RadioGroup android:id="@+id/sceneGroup" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:orientation="horizontal">
+                <RadioButton android:id="@+id/sceneGame" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="true" android:text="ゲーム" android:textColor="@color/text" />
+                <RadioButton android:id="@+id/sceneTalk" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="雑談" android:textColor="@color/text" />
+                <RadioButton android:id="@+id/sceneWait" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:text="待機" android:textColor="@color/text" />
+            </RadioGroup>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="音声ソース" android:textColor="@color/text" android:textStyle="bold" />
+            <Spinner android:id="@+id/spinnerAudio" android:layout_width="match_parent" android:layout_height="48dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="映像設定" android:textColor="@color/text" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Spinner android:id="@+id/spinnerResolution" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" />
+                <Spinner android:id="@+id/spinnerFps" android:layout_width="0dp" android:layout_height="48dp" android:layout_marginStart="8dp" android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/panel_bg" android:orientation="vertical" android:padding="14dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="配信" android:textColor="@color/text" android:textSize="16sp" android:textStyle="bold" />
+            <EditText android:id="@+id/editRtmp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:hint="rtmp://server/app/stream-key" android:inputType="textUri" android:singleLine="true" android:textColor="@color/text" android:textColorHint="@color/muted" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
+                <Button android:id="@+id/btnRecord" android:layout_width="0dp" android:layout_height="52dp" android:layout_weight="1" android:enabled="false" android:text="録画開始" android:textAllCaps="false" />
+                <Button android:id="@+id/btnStream" android:layout_width="0dp" android:layout_height="52dp" android:layout_marginStart="10dp" android:layout_weight="1" android:enabled="false" android:text="配信開始" android:textAllCaps="false" />
+            </LinearLayout>
+            <TextView android:id="@+id/txtBitrate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="送信: 0 kbps" android:textColor="@color/muted" android:textSize="13sp" />
+        </LinearLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:paddingBottom="18dp" android:text="v0.1 — 画面キャプチャ / MP4録画 / RTMP配信 / マイク・内部音声・ミックス\n※ シーン・ソース合成は次版向けのUI枠です。" android:textColor="@color/muted" android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>
