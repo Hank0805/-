@@ -10,8 +10,8 @@ android {
         applicationId = "jp.minobs.app"
         minSdk = 29
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.5.2"
+        versionCode = 10
+        versionName = "0.6.0"
     }
 
     compileOptions {
@@ -29,4 +29,5 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.github.pedroSG94.RootEncoder:library:2.8.1")
     implementation("io.github.webrtc-sdk:android:150.7871.01")
+    implementation("com.herohan:UVCAndroid:1.0.13")
 }
