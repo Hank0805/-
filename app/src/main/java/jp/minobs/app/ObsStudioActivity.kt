@@ -614,22 +614,26 @@ class ObsStudioActivity : AppCompatActivity(), SurfaceHolder.Callback {
     workspace.selectedSceneId = id
     workspace.autosave()
 
-    val targetScene = workspace.project.scenes.firstOrNull { it.id == id }
-    val transition = targetScene?.transitionOverride ?: workspace.project.transition
-    val duration = (targetScene?.transitionMsOverride ?: workspace.project.transitionMs).toLong()
+    val transition = workspace.project.transition
+    val duration = workspace.project.transitionMs.coerceIn(80, 5000)
     if (transition == StudioTransition.CUT) {
       rebuildProgram()
     } else {
-      binding.programFrame.animate()
-        .alpha(.15f)
-        .setDuration((duration / 2).coerceAtLeast(40))
-        .withEndAction {
+      val s = service
+      if (s != null && s.isCaptureReady()) {
+        s.runEncodedTransition(transition, duration) {
           rebuildProgram()
-          binding.programFrame.animate()
-            .alpha(1f)
-            .setDuration((duration / 2).coerceAtLeast(40))
-            .start()
-        }.start()
+        }
+      } else {
+        // Offline editor fallback: animate the local program surface only.
+        binding.programFrame.animate()
+          .alpha(.15f)
+          .setDuration((duration / 2L).coerceAtLeast(40L))
+          .withEndAction {
+            rebuildProgram()
+            binding.programFrame.animate().alpha(1f).setDuration((duration / 2L).coerceAtLeast(40L)).start()
+          }.start()
+      }
     }
     automation.run("SCENE_CHANGE")
     refreshAll()

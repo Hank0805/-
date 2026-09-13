@@ -124,6 +124,9 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
     private var windowManager: WindowManager? = null
 
     private val audioEffect = StudioAudioEffect()
+    private val encodedTransition = StudioEncodedTransition()
+    private val multitrack by lazy { StudioMultiTrackRecorder(File(cacheDir, "MiniOBS_multitrack")) }
+    private var multitrackActive = false
     private var studioMixer: StudioMixAudioSource? = null
     private var micVolume = 1f
     private var internalVolume = 1f
@@ -263,6 +266,15 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
     }
 
     fun detachPreview() { runCatching { stream?.let { if (it.isOnPreview) it.stopPreview() } } }
+
+    fun runEncodedTransition(transition: StudioTransition, durationMs: Int, applyScene: () -> Unit) {
+        val engine = stream
+        if (!captureReady || engine == null || transition == StudioTransition.CUT) {
+            applyScene()
+            return
+        }
+        encodedTransition.run(engine, transition, durationMs, applyScene)
+    }
 
     fun setActiveScene(scene: String) {
         if (!scenes.containsKey(scene) || scene == activeScene) return
@@ -552,18 +564,62 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
                 val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                 val file = File(folder, "MiniOBS_$stamp.mp4")
                 engine.startRecord(file.absolutePath) { _ -> }
-                normalRecording = true; recordingFile = file; recordingStartedAt = System.currentTimeMillis(); journal.beginRecording(file.absolutePath)
-                sendStatus("録画中: ${file.name}")
+                multitrackActive = studioMixer != null && multitrack.start()
+                if (multitrackActive) {
+                    studioMixer?.onRawTracks = { mic, internal, usb, timestampUs ->
+                        multitrack.write(mic, internal, usb, timestampUs)
+                    }
+                }
+                normalRecording = true
+                recordingFile = file
+                recordingStartedAt = System.currentTimeMillis()
+                journal.beginRecording(file.absolutePath)
+                sendStatus(if (multitrackActive) "録画中: ${file.name} / マルチトラック" else "録画中: ${file.name}")
             } else {
                 if (engine.isRecording) engine.stopRecord()
-                normalRecording = false; journal.finishRecording(); recordingStartedAt = 0L
-                recordingFile?.let { exportVideoToGallery(it, it.name) }
-                sendStatus("録画保存: ${recordingFile?.name ?: "完了"}")
+                studioMixer?.onRawTracks = null
+                multitrack.stopRawCapture()
+                val baseFile = recordingFile
+                val finalizeMulti = multitrackActive && baseFile != null
+                multitrackActive = false
+                normalRecording = false
+                journal.finishRecording()
+                recordingStartedAt = 0L
                 recordingFile = null
-                if (replayWasEnabled) { replay.resumeAfterNormalRecord(); replayWasEnabled = false }
+                if (finalizeMulti && baseFile != null) {
+                    val finalFile = File(baseFile.parentFile, baseFile.nameWithoutExtension + "_multitrack.mp4")
+                    sendStatus("マルチトラックMP4を作成中…")
+                    Thread({
+                        val result = multitrack.finalizeRecording(baseFile, finalFile)
+                        mainHandler.post {
+                            if (result != null) {
+                                exportVideoToGallery(result.file, result.file.name)
+                                runCatching { baseFile.delete() }
+                                sendStatus("録画保存: ${result.file.name} / 音声${result.audioTracks}トラック")
+                            } else {
+                                exportVideoToGallery(baseFile, baseFile.name)
+                                sendStatus("マルチトラック化に失敗。通常録画を保存しました")
+                            }
+                        }
+                    }, "MiniOBS-MultiTrackMux").start()
+                } else {
+                    baseFile?.let { exportVideoToGallery(it, it.name) }
+                    sendStatus("録画保存: ${baseFile?.name ?: "完了"}")
+                    multitrack.cancel()
+                }
+                if (replayWasEnabled) {
+                    replay.resumeAfterNormalRecord()
+                    replayWasEnabled = false
+                }
             }
             true
-        } catch (e: Exception) { sendStatus("録画エラー: ${e.message ?: "不明なエラー"}"); false }
+        } catch (e: Exception) {
+            studioMixer?.onRawTracks = null
+            multitrack.cancel()
+            multitrackActive = false
+            sendStatus("録画エラー: ${e.message ?: "不明なエラー"}")
+            false
+        }
     }
 
     private fun internalStartRecord(file: File): Boolean {
@@ -708,7 +764,7 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
             "capture" to captureReady, "live" to isStreamingNow(), "recording" to normalRecording, "recordingSeconds" to recordingSec,
             "scene" to activeScene, "privacy" to privacyMode, "micMuted" to micMuted, "bitrateKbps" to lastBitrate / 1000,
             "targetBitrateKbps" to currentTargetBitrate / 1000, "fps" to config.fps, "resolution" to "${config.width}x${config.height}",
-            "destinations" to lastEndpoints.size, "replay" to replay.status(), "droppedVideo" to droppedVideo, "droppedAudio" to droppedAudio,
+            "destinations" to lastEndpoints.size, "replay" to replay.status(), "multitrack" to multitrackActive, "droppedVideo" to droppedVideo, "droppedAudio" to droppedAudio,
             "remoteUrl" to remoteUrl(), "thermalStatus" to thermalStatus, "thermalLabel" to thermalLabel(thermalStatus),
             "audioFilters" to audioEffect.summary(), "usbAudio" to (studioMixer?.hasUsbAudio() == true),
             "micDelayMs" to micDelayMs, "internalDelayMs" to internalDelayMs, "usbDelayMs" to usbDelayMs,
@@ -753,6 +809,7 @@ class ScreenStreamService : Service(), ConnectChecker, RemoteStudioServer.Contro
 
     private fun stopEverything(message: String) {
         replay.stop(); autoScene.stop(); chatManager.stopAll(); remoteServer?.stop(); remoteServer = null
+        studioMixer?.onRawTracks = null; multitrack.cancel(); multitrackActive = false
         runCatching { if (normalRecording && stream?.isRecording == true) stream?.stopRecord() }
         if (normalRecording) journal.finishRecording()
         normalRecording = false; recordingFile = null; recordingStartedAt = 0
