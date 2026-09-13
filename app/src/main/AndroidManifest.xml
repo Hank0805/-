@@ -15,13 +15,13 @@
 
     <application
         android:allowBackup="true"
-        android:label="Mini OBS"
+        android:label="Mini OBS Studio"
         android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.MiniOBS">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ObsStudioActivity"
             android:exported="true"
             android:screenOrientation="unspecified">
             <intent-filter>
@@ -29,6 +29,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified" />
 
         <activity
             android:name=".CameraNodeActivity"
