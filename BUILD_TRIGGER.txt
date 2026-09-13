@@ -1,2 +1,2 @@
-Trigger GitHub Actions build for Mini OBS v0.5.3
-Separate stream server URL and stream key fields
+Trigger GitHub Actions build for Mini OBS v0.6.0
+Integrated responsive OBS UI, USB capture, crop/chroma, grouping, workspace, separate stream settings
