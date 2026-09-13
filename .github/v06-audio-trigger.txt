@@ -1,0 +1,1 @@
+Integrate independent mic/internal/USB mixer, sync correction, monitoring and thermal protection.
