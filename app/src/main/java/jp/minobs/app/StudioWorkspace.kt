@@ -105,7 +105,7 @@ class StudioWorkspace(private val context: Context) {
   fun duplicateScene(id: String): StudioScene? {
     val source = project.scenes.firstOrNull { it.id == id } ?: return null
     checkpoint()
-    val copy = source.deepCopy(true).also { it.name = source.name + " Copy" }
+    val copy = source.deepCopy(true).also { it.name = source.name + " のコピー" }
     project.scenes += copy
     selectedSceneId = copy.id
     selectedSourceId = null
@@ -133,7 +133,7 @@ class StudioWorkspace(private val context: Context) {
     source.transform = when (type) {
       StudioSourceType.SCREEN -> StudioTransform(0f, 0f, 100f, 100f)
       StudioSourceType.TEXT, StudioSourceType.CLOCK, StudioSourceType.TIMER, StudioSourceType.CHAT -> StudioTransform(8f, 8f, 42f, 16f)
-      StudioSourceType.CAMERA, StudioSourceType.EXTERNAL -> StudioTransform(68f, 5f, 28f, 28f)
+      StudioSourceType.CAMERA, StudioSourceType.USB_CAPTURE, StudioSourceType.EXTERNAL -> StudioTransform(68f, 5f, 28f, 28f)
       StudioSourceType.IMAGE -> StudioTransform(8f, 58f, 28f, 28f)
       else -> StudioTransform(15f, 15f, 70f, 55f)
     }
@@ -208,6 +208,23 @@ class StudioWorkspace(private val context: Context) {
     ids.forEach { source(it)?.groupId = group }
     autosave()
     return group
+  }
+
+  fun ungroup(groupId: String?): Boolean {
+    if (groupId.isNullOrBlank()) return false
+    checkpoint()
+    var changed = false
+    project.scenes.forEach { scene ->
+      scene.sources.filter { it.groupId == groupId }.forEach { it.groupId = null; changed = true }
+    }
+    project.globalSources.filter { it.groupId == groupId }.forEach { it.groupId = null; changed = true }
+    if (changed) autosave()
+    return changed
+  }
+
+  fun groupMembers(groupId: String?): List<StudioSource> {
+    if (groupId.isNullOrBlank()) return emptyList()
+    return (project.scenes.flatMap { it.sources } + project.globalSources).filter { it.groupId == groupId }
   }
 
   fun savePreset(name: String, source: StudioSource) {
